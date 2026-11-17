@@ -1,0 +1,1816 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
+<title>Vesper Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Oxanium:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+@property --a{syntax:'<color>';inherits:true;initial-value:#17132a}
+@property --b{syntax:'<color>';inherits:true;initial-value:#2a1f46}
+:root{--ui:'Oxanium',system-ui,sans-serif;--tx:'Oxanium',system-ui,sans-serif;--ink:#efe8dc;--mut:#a39cb4;--lamp:#f0b968;--rose:#d9788f;--pan:rgba(16,13,32,.62);--ln:rgba(239,232,220,.14)}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font:17px/1.6 var(--tx);color:var(--ink);background:linear-gradient(180deg,var(--a),var(--b)) fixed;transition:--a 2s,--b 2s;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+button{font:600 15px var(--ui);color:var(--ink);background:rgba(239,232,220,.08);border:1px solid var(--ln);border-radius:10px;padding:.6em 1em;cursor:pointer;text-align:left;transition:background .2s,transform .15s}
+button:hover:not(:disabled){background:rgba(240,185,104,.2);border-color:var(--lamp)}
+button:active:not(:disabled){transform:scale(.98)}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,a:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+.p{background:var(--lamp);color:#1b1428;border-color:var(--lamp)}
+.p:hover:not(:disabled){background:#ffd08a!important}
+[hidden]{display:none!important}
+main{max-width:940px;margin:0 auto;padding:20px}
+.pan{background:var(--pan);backdrop-filter:blur(10px);border:1px solid var(--ln);border-radius:16px;padding:18px 20px}
+h1,h2,h3{font-family:var(--ui);margin:0}
+.lbl{font:600 13px var(--ui);color:var(--mut);margin:0 0 8px}
+/* início */
+#home{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:22px}
+#home h1{font-size:clamp(64px,16vw,150px);font-weight:800;letter-spacing:.06em;line-height:.9;background:linear-gradient(180deg,var(--lamp),var(--rose));-webkit-background-clip:text;background-clip:text;color:transparent;animation:rise 1.6s cubic-bezier(.2,.7,.2,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(30px);letter-spacing:.3em}}
+#drop{border:2px dashed var(--ln);border-radius:18px;padding:34px 20px;text-align:center;transition:.2s}
+#drop.over{border-color:var(--lamp);background:rgba(240,185,104,.12)}
+#drop p{margin:0 0 14px;color:var(--mut)}
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+#lib .it{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--ln)}
+#lib .it:first-of-type{border:0}
+.err{white-space:pre-wrap;font:14px/1.5 ui-monospace,Menlo,monospace;border-color:var(--rose);color:#ffd5de}
+/* jogo */
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+header h2{font-size:20px}
+#clk{font:600 15px var(--ui);color:var(--lamp);display:flex;gap:14px;align-items:baseline}
+#clk b{font-size:30px;font-weight:800;letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:1fr 250px;gap:14px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+#room h3{font-size:30px;margin-bottom:6px}
+#desc{margin:0 0 10px;font-size:19px}
+#chars span{display:inline-block;margin:0 8px 0 0;padding:2px 10px;border-radius:99px;background:rgba(217,120,143,.2);font:600 13px var(--ui)}
+#stage{margin-top:14px;border-color:var(--lamp)}
+#log{max-height:42vh;overflow:auto}
+.ln{margin:0 0 10px;animation:in .35s both}
+.ln.n{font-style:italic;color:#dcd3c4}
+.ln b{font:600 14px var(--ui);color:var(--lamp);margin-right:8px}
+.ln.e{color:#ffb4c3;font:14px ui-monospace,monospace}
+@keyframes in{from{opacity:0;filter:blur(4px);transform:translateY(8px)}}
+#ctl{display:flex;flex-direction:column;gap:8px;margin-top:8px;align-items:flex-start}
+#acts{margin-top:14px;display:flex;flex-direction:column;gap:14px}
+.bs{display:flex;flex-wrap:wrap;gap:8px}
+.bs small{font-weight:400;color:var(--mut);margin-left:6px}
+#inv .i{padding:8px 0;border-top:1px solid var(--ln);font-family:var(--ui);font-size:14px}
+#inv .i:first-of-type{border:0}
+#inv .i p{margin:2px 0 6px;color:var(--mut);font:italic 15px var(--tx)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--lamp);color:#1b1428;padding:10px 18px;border-radius:99px;font:600 14px var(--ui);transition:.4s;opacity:0;pointer-events:none}
+#toast.on{opacity:1}
+dialog{background:#1b1630;color:var(--ink);border:1px solid var(--ln);border-radius:16px;padding:20px;width:min(440px,92vw)}
+dialog::backdrop{background:rgba(5,3,14,.7)}
+.sl{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--ln);font-family:var(--ui);font-size:14px}
+#side{display:flex;flex-direction:column;gap:14px;align-self:start}
+@media(max-width:760px){#side{display:contents}#hud{order:-1}}
+/* variáveis (HUD) */
+#hud{display:flex;flex-direction:column;gap:14px}
+#hud .lbl{margin:0}
+.hv{--c:var(--rose);display:flex;flex-direction:column;gap:6px;font-family:var(--ui)}
+.hh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px}
+.hl{color:var(--mut);font-weight:600}
+.hn{display:inline-block;font-variant-numeric:tabular-nums;font-weight:600}
+.s-number .hh{flex-direction:column;align-items:flex-start;gap:0}
+.s-number .hn{font-size:30px;font-weight:800;color:var(--lamp);line-height:1.15}
+.s-text .hn{font:italic 17px var(--tx)}
+.bar{height:10px;border-radius:99px;background:rgba(239,232,220,.12);overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:inherit;background:var(--c);transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.hv.warn .bar{animation:pulse 1.2s ease-in-out infinite}
+.pips{display:flex;gap:4px;flex-wrap:wrap;font-size:19px;line-height:1}
+.pips span{color:rgba(239,232,220,.2);transition:color .3s}
+.pips span.on{color:var(--c)}
+.s-flag .hn{padding:1px 10px;border-radius:99px;border:1px solid var(--ln);font-size:13px}
+.s-flag.on .hn{background:var(--c);color:#1b1428;border-color:var(--c)}
+.hv.up .hn{animation:fup .9s}.hv.dn .hn{animation:fdn .9s}
+@keyframes fup{30%{color:#8fd6a0;transform:scale(1.12)}}
+@keyframes fdn{30%{color:#ff8a9b;transform:scale(.94)}}
+@keyframes pulse{50%{opacity:.5}}
+@keyframes blink{50%{opacity:0}}
+/* console: escrita */
+.wr>span::after{content:'▍';color:var(--lamp);margin-left:2px;animation:blink 1s steps(2) infinite}
+.skip{font:13px var(--ui);color:var(--mut)}
+#ctl>*,#acts>*{animation:in .5s both}
+/* criação */
+#create{min-height:100vh;display:flex;flex-direction:column;justify-content:center}
+#create h2{font-size:clamp(30px,6vw,48px);margin-bottom:6px}
+#cdesc{font-size:19px;margin:0 0 20px}
+.fld{margin:0 0 22px}
+.fld label,.fld legend{font:600 15px var(--ui);display:block;margin:0 0 6px;padding:0}
+.fld fieldset{border:0;padding:0;margin:0;min-width:0}
+.fld .hint{display:block;color:var(--mut);font:italic 15px var(--tx);margin:-2px 0 8px}
+.fld input[type=text]{width:100%;font:19px var(--tx);color:var(--ink);background:rgba(239,232,220,.07);border:1px solid var(--ln);border-radius:10px;padding:.55em .8em}
+.fld input[type=text]:focus-visible{outline:2px solid var(--lamp);outline-offset:2px;border-color:var(--lamp)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+.fld .opt{position:relative;display:flex;margin:0;padding:10px 12px;border:1px solid var(--ln);border-radius:10px;background:rgba(239,232,220,.06);cursor:pointer;transition:background .2s,border-color .2s}
+.opt input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.opt span{display:flex;flex-direction:column;gap:2px;font:600 15px var(--ui)}
+.opt small{font:italic 15px/1.35 var(--tx);color:var(--mut);font-weight:400}
+.opt:hover{background:rgba(240,185,104,.12)}
+.opt:has(input:checked){border-color:var(--lamp);background:rgba(240,185,104,.2)}
+.opt:has(input:checked) b::before{content:'✓ ';color:var(--lamp)}
+.opt:has(input:focus-visible){outline:2px solid var(--lamp);outline-offset:2px}
+.rng{display:flex;gap:14px;align-items:center}
+.rng input{flex:1;accent-color:var(--lamp)}
+.rng output{font:800 24px var(--ui);color:var(--lamp);min-width:3ch;text-align:right}
+.ferr{color:#ffb4c3;font:600 14px var(--ui);margin:6px 0 0}
+/* game over */
+#over{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:24px;overflow:auto;background:radial-gradient(ellipse at 50% 38%,rgba(34,10,26,.92),rgba(5,3,14,.98));animation:ofade 1.2s both}
+@keyframes ofade{from{opacity:0}}
+#over .ob{max-width:620px;text-align:center}
+#otag{font:600 16px var(--ui);color:var(--mut);margin:0 0 10px;letter-spacing:.2em}
+#otitle{font-size:clamp(40px,10vw,84px);font-weight:800;line-height:1;margin-bottom:26px;color:var(--rose);animation:rise 1.4s cubic-bezier(.2,.7,.2,1) both}
+#over.k-good #otitle{color:var(--lamp)}
+#over.k-neutral #otitle{color:var(--ink)}
+#otext{font-size:21px;margin:0 0 18px;min-height:4em}
+#ocount{font:600 14px var(--ui);color:var(--mut);margin:0 0 22px}
+#oacts>*{animation:in .5s both}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== CYBERPUNK OLED · terminal (luzes dinâmicas mantidas) ===== */
+@property --ac{syntax:'<color>';inherits:true;initial-value:#b44cff}
+@property --ac2{syntax:'<color>';inherits:true;initial-value:#ff2bd6}
+:root{--ui:'Oxanium','JetBrains Mono',ui-monospace,monospace;--tx:'Oxanium','JetBrains Mono',ui-monospace,monospace;--hd:'Orbitron','Oxanium',ui-monospace,monospace;--ink:#d8f6ff;--mut:#6f8f9c;--pan:rgba(0,0,0,.78)}
+body{font:15px/1.65 var(--tx);color:var(--ink);--lamp:var(--ac);--rose:var(--ac2);--ln:color-mix(in srgb,var(--ac) 30%,transparent);
+ background:radial-gradient(ellipse at center,transparent 46%,rgba(0,0,0,.48) 100%),radial-gradient(120% 65% at 50% -8%,color-mix(in srgb,var(--a) 100%,transparent),transparent 70%),radial-gradient(90% 55% at 50% 112%,color-mix(in srgb,var(--b) 90%,transparent),transparent 65%),#000;background-attachment:fixed;
+ transition:--a 2.5s,--b 2.5s,--ac 2.5s,--ac2 2.5s}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:99;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px),linear-gradient(90deg,rgba(255,30,80,.018),transparent 34%,rgba(0,220,255,.018));box-shadow:inset 0 0 150px #000;animation:crt-flicker 8s steps(1,end) infinite}
+@keyframes crt-flicker{0%,95%,100%{opacity:1}96%{opacity:.88}97%{opacity:.97}98%{opacity:.92}}
+button{font:600 12px var(--ui);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);background:rgba(0,0,0,.6);border:1px solid var(--ln);border-radius:2px;padding:.7em 1em}
+button:hover:not(:disabled){background:color-mix(in srgb,var(--lamp) 16%,#000);border-color:var(--lamp);box-shadow:0 0 14px -2px var(--lamp);color:#fff}
+.p{background:var(--lamp);color:#000;border-color:var(--lamp);box-shadow:0 0 18px -4px var(--lamp)}
+.p:hover:not(:disabled){background:#fff!important;color:#000!important}
+.bs button::before{content:'> ';color:var(--lamp)}.bs small{text-transform:none;letter-spacing:0}
+.pan{position:relative;border-radius:2px;border:1px solid var(--ln);background:var(--pan);box-shadow:0 0 0 1px #000,0 0 28px -14px var(--lamp),inset 0 0 40px -32px var(--lamp);backdrop-filter:blur(6px)}
+.pan::before{content:'';position:absolute;inset:-1px;pointer-events:none;background:linear-gradient(var(--lamp),var(--lamp)) 0 0/14px 1px no-repeat,linear-gradient(var(--lamp),var(--lamp)) 0 0/1px 14px no-repeat,linear-gradient(var(--lamp),var(--lamp)) 100% 100%/14px 1px no-repeat,linear-gradient(var(--lamp),var(--lamp)) 100% 100%/1px 14px no-repeat}
+.lbl{font:600 11px var(--ui);letter-spacing:.22em;text-transform:uppercase;color:var(--mut)}.lbl::before{content:'// ';color:var(--lamp)}
+header h2{font:800 15px var(--hd);letter-spacing:.14em;text-transform:uppercase}
+#clk b{font-family:var(--hd);text-shadow:0 0 14px var(--lamp)}
+#room h3{font:800 22px var(--hd);letter-spacing:.08em;text-transform:uppercase;color:var(--lamp);text-shadow:0 0 14px color-mix(in srgb,var(--lamp) 60%,transparent)}
+#desc{font-size:15.5px}.ln.n{color:#9fc4d0}.ln b{letter-spacing:.06em;text-transform:uppercase;font-size:12px}.ln.player{color:#b8f4df}.ln.player b{color:var(--rose);text-transform:none}
+#chars span{border-radius:2px;background:color-mix(in srgb,var(--rose) 16%,#000);border:1px solid color-mix(in srgb,var(--rose) 55%,transparent);font-size:12px}
+.bar{height:8px;border-radius:0}.bar i{border-radius:0;box-shadow:0 0 10px var(--c)}
+.s-number .hn{font-family:var(--hd);text-shadow:0 0 12px var(--lamp)}.s-text .hn{font:italic 15px var(--tx)}
+#inv .i p{font:italic 13px var(--tx)}
+.fld input[type=text],.opt{border-radius:2px}.fld input[type=text]{background:#000;font:16px var(--tx)}
+#create h2{font-family:var(--hd);text-transform:uppercase;letter-spacing:.06em}.opt small{font:italic 13px var(--tx)}
+#drop{border:1px dashed var(--lamp);border-radius:2px}
+dialog{background:#000;color:var(--ink);border:1px solid var(--lamp);border-radius:2px;box-shadow:0 0 40px -10px var(--lamp)}
+dialog::backdrop{background:rgba(0,0,0,.84)}dialog h3{font:800 16px var(--hd);letter-spacing:.1em;text-transform:uppercase}
+#toast{z-index:100;border-radius:2px;background:#000;color:var(--lamp);border:1px solid var(--lamp);box-shadow:0 0 20px -4px var(--lamp);text-transform:uppercase;letter-spacing:.06em}
+#clrs{display:grid;gap:8px}#clrs button{display:flex;align-items:center;gap:10px}#clrs i{width:18px;height:18px;border:1px solid #fff4}
+#over{background:radial-gradient(ellipse at 50% 40%,rgba(50,0,20,.85),#000 70%)}#otitle{font-family:var(--hd)}
+#lib .it small{color:var(--mut)}
+/* tela inicial */
+#home{gap:18px}
+#home::before{content:'';position:fixed;left:-20%;right:-20%;bottom:0;height:46vh;z-index:-1;pointer-events:none;background:linear-gradient(var(--ln) 1px,transparent 1px) 0 0/100% 46px,linear-gradient(90deg,var(--ln) 1px,transparent 1px) 0 0/60px 100%;transform:perspective(380px) rotateX(62deg);transform-origin:50% 100%;-webkit-mask-image:linear-gradient(to top,#000,transparent 85%);mask-image:linear-gradient(to top,#000,transparent 85%);animation:grid 3s linear infinite}
+@keyframes grid{to{background-position:0 46px,0 0}}
+#home h1{position:relative;font:900 clamp(52px,15vw,140px)/1 var(--hd);letter-spacing:.14em;background:none;color:#fff;-webkit-text-fill-color:#fff;text-shadow:0 0 18px var(--lamp),0 0 70px color-mix(in srgb,var(--lamp) 55%,transparent);animation:bt 1.4s cubic-bezier(.2,.7,.2,1) both,flick 7s 2s infinite}
+#home h1::before,#home h1::after{content:attr(data-t);position:absolute;inset:0;overflow:hidden;pointer-events:none;mix-blend-mode:screen;text-shadow:none;-webkit-text-fill-color:currentColor}
+#home h1::before{color:var(--rose);transform:translate(-3px,0);clip-path:inset(0 0 55% 0);animation:g1 3.2s infinite steps(1)}
+#home h1::after{color:var(--lamp);transform:translate(3px,0);clip-path:inset(55% 0 0 0);animation:g2 2.7s infinite steps(1)}
+@keyframes bt{from{opacity:0;filter:blur(10px);letter-spacing:.5em}}
+@keyframes flick{0%,92%,97%,100%{opacity:1}93%{opacity:.5}94%{opacity:1}96%{opacity:.7}}
+@keyframes g1{0%,90%,100%{clip-path:inset(0 0 55% 0);transform:translate(-3px,0)}92%{clip-path:inset(18% 0 45% 0);transform:translate(-9px,0)}95%{clip-path:inset(62% 0 8% 0);transform:translate(6px,0)}}
+@keyframes g2{0%,86%,100%{clip-path:inset(55% 0 0 0);transform:translate(3px,0)}88%{clip-path:inset(30% 0 50% 0);transform:translate(8px,0)}91%{clip-path:inset(5% 0 70% 0);transform:translate(-6px,0)}}
+.tag{font:600 12px var(--ui);letter-spacing:.35em;text-transform:uppercase;color:var(--lamp);margin:-6px 0 0}.tag::before{content:'▌';margin-right:.6em;animation:blink 1s steps(2) infinite}
+.boot{margin:0;padding:0;list-style:none;font:12px/1.9 var(--ui);color:var(--mut)}.boot li{opacity:0;animation:bl .4s forwards}.boot b{color:var(--lamp);font-weight:600}
+.boot li:nth-child(1){animation-delay:.6s}.boot li:nth-child(2){animation-delay:1s}
+@keyframes bl{to{opacity:1}}
+
+/* ===== INTERFACE RESPONSIVA · SCROLL NEON DINÂMICO ===== */
+/* --ac e --ac2 são atualizadas pela função lights(): automático, Theme.set ou escolha manual. */
+html{scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:var(--ac) color-mix(in srgb,var(--ac) 11%,#05070b)}
+body,*{scrollbar-width:thin;scrollbar-color:var(--ac) color-mix(in srgb,var(--ac) 11%,#05070b)}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-track{background:color-mix(in srgb,var(--ac) 10%,#03050a);border:1px solid color-mix(in srgb,var(--ac2) 24%,transparent)}
+*::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--ac2),var(--ac));border:2px solid color-mix(in srgb,var(--ac) 12%,#05070b);border-radius:2px;box-shadow:0 0 10px color-mix(in srgb,var(--ac) 70%,transparent)}
+*::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--ac),var(--ac2));box-shadow:0 0 14px var(--ac)}
+#log{max-height:min(48vh,560px);overflow:auto;overscroll-behavior-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch;scrollbar-gutter:stable;padding-right:8px;scrollbar-color:var(--ac2) color-mix(in srgb,var(--ac2) 9%,#03050a)}
+#log::-webkit-scrollbar{width:8px}
+#log::-webkit-scrollbar-track{background:color-mix(in srgb,var(--ac2) 9%,#03050a)}
+#log::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--ac2),var(--ac));border-color:color-mix(in srgb,var(--ac) 12%,#05070b)}
+#game{max-width:1180px;width:100%;min-width:0}
+.grid{grid-template-columns:minmax(0,1fr) 270px;align-items:start}
+.grid>div,#side{min-width:0}
+#side{gap:12px}
+.fold{min-width:0}
+.fold>summary{display:none}
+.fold>section.pan{min-width:0}
+.sidehead{display:none}
+#bpanel{display:none}
+#panelShade{display:none}
+.mobile-actions{display:none}
+
+@media(max-width:760px){
+  html,body{min-height:100%;width:100%;overflow-x:hidden}
+  body{font-size:15px;background-attachment:scroll}
+  main{width:100%;max-width:100%;padding:14px 12px}
+  #game{padding:calc(env(safe-area-inset-top) + 86px) 12px calc(env(safe-area-inset-bottom) + 24px)}
+  #game header{position:fixed;top:0;left:0;right:0;z-index:115;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px 8px;align-items:center;margin:0;padding:calc(env(safe-area-inset-top) + 9px) 12px 10px;border-bottom:1px solid var(--ln);background:rgba(0,0,0,.98);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  #game header h2{min-width:0;overflow-wrap:anywhere;font-size:clamp(12px,3.6vw,15px);line-height:1.35}
+  #clk{justify-content:flex-end;gap:7px;white-space:nowrap;font-size:10px;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
+  #clk{transform:translateX(0);opacity:1;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .22s ease;will-change:transform,opacity}
+  body.panel-open #clk{transform:translateX(-58px);opacity:.18;pointer-events:none}
+  #clk b{font-size:clamp(19px,6vw,25px)}
+  .header-actions{display:none}
+  .header-actions button{min-width:0;padding:.75em .35em;text-align:center;font-size:10px;letter-spacing:.03em;min-height:42px}
+  #bcor,#bsave,#bexit{display:none}
+  .grid{display:block;width:100%;min-width:0}
+  .grid>div{display:flex;flex-direction:column;gap:10px;width:100%;min-width:0}
+  #room{padding:16px 14px}
+  #room h3{font-size:clamp(18px,5.5vw,23px);line-height:1.25;overflow-wrap:anywhere}
+  #desc{font-size:15px;line-height:1.55}
+  #chars span{margin:5px 5px 0 0}
+  #stage{margin-top:0;padding:13px 12px}
+  #log{max-height:42dvh;min-height:100px;padding-right:5px;font-size:14px;line-height:1.55;overscroll-behavior-y:auto;touch-action:pan-y;-webkit-overflow-scrolling:touch}
+  #stage{touch-action:pan-y}
+  .ln{overflow-wrap:anywhere}
+  #ctl{gap:7px}
+  #ctl button{width:100%;min-height:44px;text-align:left}
+  #acts{gap:10px;margin-top:0}
+  #acts>div{min-width:0;padding:12px;border:1px solid var(--ln);background:rgba(0,0,0,.45)}
+  .bs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .bs button{min-width:0;min-height:44px;padding:.75em .65em;overflow-wrap:anywhere;font-size:10px}
+  .bs small{display:block;margin:3px 0 0}
+  #side{position:fixed;z-index:121;top:0;right:0;bottom:0;width:min(88vw,390px);height:100dvh;max-height:100dvh;display:flex;flex-direction:column;gap:12px;align-self:stretch;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 18px);background:linear-gradient(160deg,#07111b 0%,#080612 58%,#16051c 100%);border-left:1px solid var(--ac);box-shadow:-18px 0 55px rgba(0,0,0,.82),-2px 0 22px -8px var(--ac);transform:translateX(105%);visibility:hidden;pointer-events:none;transition:transform .28s ease,visibility .28s;}
+  body.panel-open #side{transform:translateX(0);visibility:visible;pointer-events:auto}
+  .sidehead{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 0 10px;background:linear-gradient(180deg,#07111b 80%,transparent);font:700 12px var(--hd);letter-spacing:.13em;color:var(--lamp)}
+  .sidehead button{font-size:18px;line-height:1;padding:.35em .65em;min-width:40px;min-height:40px;text-align:center}
+  .fold{display:block;width:100%;min-width:0;border:1px solid var(--ln);background:rgba(0,0,0,.52)}
+  .fold>summary{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:46px;padding:11px 12px;cursor:pointer;list-style:none;font:700 11px var(--hd);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);user-select:none}
+  .fold>summary::-webkit-details-marker{display:none}
+  .fold>summary::after{content:'+';font:700 18px var(--ui);color:var(--lamp)}
+  .fold[open]>summary::after{content:'−'}
+  .fold>section.pan{margin:0 8px 8px;padding:12px;border-color:color-mix(in srgb,var(--ac) 24%,transparent);background:rgba(0,0,0,.66);box-shadow:none}
+  .mobile-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:auto;padding-top:12px;border-top:1px solid var(--ln)}
+  .mobile-actions button{width:100%;min-height:48px;text-align:left;padding:12px 14px}
+  #hud[hidden]{display:none!important}
+  #hud .lbl,#inv>.lbl{display:none}
+  #hud .hv{margin:2px 0 12px}
+  #hud .hh{font-size:12px}
+  #hud .s-number .hn{font-size:25px}
+  #inv .i{font-size:12px}
+  #inv .i p{font-size:13px;line-height:1.45}
+  #inv .i button{min-height:40px}
+  #panelShade{display:block;position:fixed;z-index:120;inset:0;background:rgba(0,0,0,.66);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s}
+  body.panel-open #panelShade{opacity:1;visibility:visible}
+  body.panel-open{overflow:hidden;touch-action:pan-y}
+  #toast{bottom:calc(env(safe-area-inset-bottom) + 14px);max-width:calc(100vw - 28px);white-space:normal;text-align:center}
+  #home{min-height:100svh;justify-content:center;padding:22px 16px}
+  #home h1{font-size:clamp(48px,16vw,86px);letter-spacing:.08em}
+  #drop{padding:26px 14px}
+  #drop .row{display:grid;grid-template-columns:1fr;gap:8px}
+  #drop .row button{width:100%;min-height:46px;text-align:center}
+  #lib .it{align-items:flex-start;flex-direction:column;padding:12px 0}
+  #lib .it .row{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  #lib .it button{min-height:42px;text-align:center;padding:.6em .4em;font-size:10px}
+  #create{min-height:100svh;justify-content:flex-start;padding-top:20px}
+  #create .pan{padding:17px 14px}
+  .opts{grid-template-columns:1fr}
+  .row{gap:7px}
+  button{min-height:42px;touch-action:manipulation}
+  dialog{max-width:calc(100vw - 24px);max-height:calc(100dvh - 32px);overflow:auto;padding:16px}
+}
+@media(max-width:380px){
+  #game{padding-left:9px;padding-right:9px}
+  .header-actions button{font-size:9px}
+  #clk{font-size:9px}
+  #clk b{font-size:18px}
+  .bs{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  #side,#panelShade{transition:none!important}
+}
+/* Efeitos de texto acionados pelo autor via Narrator.say / Character.say. */
+.fx-char{display:inline-block;white-space:pre}
+.ln.fx-shake .fx-char{animation:fx-shake .24s steps(2,end) infinite;animation-delay:calc(var(--i)*13ms)}
+.ln.fx-wave .fx-char{animation:fx-wave 1.15s ease-in-out infinite;animation-delay:calc(var(--i)*42ms)}
+.ln.fx-rainbow .fx-char{animation:fx-rainbow 3s linear infinite;animation-delay:calc(var(--i)*-95ms)}
+.ln.fx-glitch .fx-char{animation:fx-glitch 1.8s steps(1,end) infinite;animation-delay:calc(var(--i)*31ms)}
+.ln.fx-neon .fx-char{animation:fx-neon 1.35s ease-in-out infinite alternate;animation-delay:calc(var(--i)*22ms)}
+.ln.fx-pulse .fx-char{animation:fx-pulse 1.3s ease-in-out infinite;animation-delay:calc(var(--i)*35ms)}
+@keyframes fx-shake{0%,100%{transform:translate(0,0)}25%{transform:translate(-.7px,.5px)}50%{transform:translate(.7px,-.4px)}75%{transform:translate(-.4px,-.6px)}}
+@keyframes fx-wave{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes fx-rainbow{from{filter:hue-rotate(0deg)}to{filter:hue-rotate(360deg)}}
+@keyframes fx-glitch{0%,88%,100%{transform:translate(0);text-shadow:none}90%{transform:translate(-1px,1px);text-shadow:2px 0 #ff2bd6,-2px 0 #00f0ff}92%{transform:translate(1px,-1px);text-shadow:-2px 0 #ff2bd6,2px 0 #00f0ff}94%{transform:translate(0);text-shadow:1px 0 #fff,-1px 0 #00f0ff}}
+@keyframes fx-neon{from{text-shadow:0 0 2px currentColor,0 0 5px currentColor;opacity:.82}to{text-shadow:0 0 5px currentColor,0 0 14px currentColor,0 0 24px currentColor;opacity:1}}
+@keyframes fx-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.58;transform:scale(.96)}}
+/* HUD flutuante: cópia temporária da variável alterada no mobile */
+.hud-float{position:fixed;z-index:114;left:12px;right:12px;width:auto;padding:12px 14px;background:rgba(0,0,0,.98);border:1px solid var(--ac);box-shadow:0 0 24px color-mix(in srgb,var(--ac) 40%,transparent);pointer-events:none;opacity:0;transform:translateY(-115%);}
+.hud-float .hv{margin:0!important}.hud-float .lbl{display:none!important}
+@keyframes hudFloatIn{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes hudFloatOut{to{opacity:0;transform:translateY(12px) scale(.97)}}
+@media(max-width:760px){.hud-float{left:10px;right:10px}}
+@media(prefers-reduced-motion:reduce){.hud-float{display:none!important}}
+
+/* ===== VESPER DEVELOPER: interface de trabalho minimalista ===== */
+:root{--dev-bg:#101214;--dev-panel:#171a1d;--dev-line:#30363b;--dev-text:#e7eaec;--dev-muted:#929ba2;--dev-accent:#9dd6c4}
+body{background:#101214!important;color:var(--dev-text);font-family:system-ui,-apple-system,Segoe UI,sans-serif!important;font-size:15px}
+body::after,#home::before{display:none!important}
+button{font:500 13px system-ui,sans-serif!important;letter-spacing:0!important;text-transform:none!important;border:1px solid var(--dev-line)!important;border-radius:6px!important;background:#202428!important;color:var(--dev-text)!important;box-shadow:none!important;text-shadow:none!important}
+button:hover:not(:disabled){background:#2a3035!important;border-color:#59636a!important;box-shadow:none!important}
+button.p,.dev-primary{background:var(--dev-accent)!important;color:#102019!important;border-color:var(--dev-accent)!important}
+button.p:hover:not(:disabled),.dev-primary:hover:not(:disabled){background:#c4f0df!important;color:#102019!important}
+.pan{background:var(--dev-panel)!important;border:1px solid var(--dev-line)!important;border-radius:8px!important;box-shadow:none!important;backdrop-filter:none!important}
+.pan::before{display:none!important}
+.lbl{font:600 11px system-ui,sans-serif!important;letter-spacing:.08em!important;text-transform:uppercase;color:var(--dev-muted)!important}
+.lbl::before{content:none!important}
+#home h1{font:700 clamp(54px,13vw,108px)/1 system-ui,sans-serif!important;letter-spacing:-.08em!important;color:var(--dev-text)!important;-webkit-text-fill-color:var(--dev-text)!important;background:none!important;text-shadow:none!important;animation:none!important}
+#home h1::before,#home h1::after,.tag::before{display:none!important}
+.tag{font:500 11px system-ui,sans-serif!important;letter-spacing:.18em!important;color:var(--dev-accent)!important}
+.boot{display:none}
+#drop{border:1px dashed #485158!important;border-radius:8px!important;background:#15191c!important}
+#drop.over{border-color:var(--dev-accent)!important;background:#1c2925!important}
+header h2{font:600 13px system-ui,sans-serif!important;letter-spacing:0!important;text-transform:none!important}
+#clk{font:500 12px system-ui,sans-serif!important;color:var(--dev-muted)!important}
+#clk b{font:650 22px ui-monospace,monospace!important;text-shadow:none!important;color:var(--dev-text)}
+#room h3{font:650 22px system-ui,sans-serif!important;letter-spacing:-.02em!important;text-transform:none!important;text-shadow:none!important;color:var(--dev-text)!important}
+#desc{font-size:15px!important;color:#bdc5ca}
+#chars span{border:1px solid #394249!important;border-radius:5px!important;background:#20272b!important;color:#c8d8d2!important}
+#stage{border-color:var(--dev-line)!important}
+.ln b{font:600 12px system-ui,sans-serif!important;color:var(--dev-accent)!important;text-transform:none!important}
+#log{scrollbar-color:#58636b #1a1e21!important}
+.hv .bar i{box-shadow:none!important}
+#clk b{text-shadow:none!important}
+.ln.fx-shake .fx-char,.ln.fx-wave .fx-char,.ln.fx-rainbow .fx-char,.ln.fx-glitch .fx-char,.ln.fx-neon .fx-char,.ln.fx-pulse .fx-char{animation:none!important;filter:none!important;transform:none!important;text-shadow:none!important}
+.fx-char{display:inline!important;white-space:normal!important}
+#home h1,#home h1::before,#home h1::after{animation:none!important}
+#rt,#desc,#chars span,#acts button,#hud .hv,#log .ln{transition:none!important}
+
+#log::-webkit-scrollbar-thumb,*::-webkit-scrollbar-thumb{background:#58636b!important;border-color:#1a1e21!important;box-shadow:none!important}
+#side{background:#15191c!important;border-color:var(--dev-line)!important;box-shadow:none!important}
+#side .fold,#side .pan{background:#191e22!important;border-color:#30383d!important;box-shadow:none!important}
+#side .fold>summary{font:600 11px system-ui,sans-serif!important;letter-spacing:.07em!important}
+#side .fold>summary::after{color:var(--dev-accent)!important}
+#devbar[hidden],#devpanel[hidden]{display:none!important}
+#devbar{position:fixed;z-index:150;top:0;left:0;right:0;min-height:52px;padding:7px max(12px,env(safe-area-inset-right)) 7px max(12px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(16,18,20,.97);border-bottom:1px solid var(--dev-line);backdrop-filter:blur(10px)}
+.devbrand{font:700 13px ui-monospace,monospace;letter-spacing:.08em;white-space:nowrap}.devbrand span{color:var(--dev-accent);font-weight:500}
+.devbar-actions{display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto}.devbar-actions button{white-space:nowrap;padding:7px 10px!important;min-height:34px}
+.devbar-actions button.dev-active{border-color:var(--dev-accent)!important;color:var(--dev-accent)!important;background:#1a2723!important}
+#devHome{font-size:18px!important;padding:2px 10px!important}
+#game{padding-top:72px!important}
+#devpanel{position:fixed;z-index:151;top:62px;right:12px;bottom:12px;width:min(410px,calc(100vw - 24px));display:flex;flex-direction:column;overflow:hidden;background:#15191c;border:1px solid #3b454b;border-radius:9px;box-shadow:0 18px 60px #000b}
+.devpanel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 14px 10px;border-bottom:1px solid var(--dev-line)}
+.devpanel-head small{display:block;color:var(--dev-muted);font:600 9px ui-monospace,monospace;letter-spacing:.15em}.devpanel-head strong{display:block;font-size:15px;font-weight:650;margin-top:2px}
+.devpanel-head button{font-size:18px!important;padding:2px 9px!important}
+.devtabs{display:flex;gap:3px;padding:8px;overflow-x:auto;border-bottom:1px solid var(--dev-line);scrollbar-width:thin}
+.devtabs button{flex:0 0 auto;padding:7px 9px!important;font-size:11px!important;color:var(--dev-muted)!important}.devtabs button.selected{background:#26332f!important;color:var(--dev-accent)!important;border-color:#526d63!important}
+.dev-inspector{padding:14px;overflow:auto;overscroll-behavior:contain;flex:1;min-height:0}
+.dev-section{padding:0 0 14px;margin:0 0 14px;border-bottom:1px solid var(--dev-line)}
+.dev-section:last-child{border:0;margin-bottom:0}.dev-section h3{font:650 12px system-ui,sans-serif!important;margin:0 0 10px!important;color:#dbe3e6;letter-spacing:.02em!important}
+.dev-field{display:grid;gap:5px;margin:0 0 11px}.dev-field label{font-size:11px;color:var(--dev-muted);font-weight:600}.dev-field input,.dev-field textarea,.dev-field select,.dev-code{width:100%;min-width:0;border:1px solid #3b454b;border-radius:5px;background:#0e1113;color:var(--dev-text);font:13px/1.5 ui-monospace,monospace;padding:9px;outline:none}.dev-field input:focus,.dev-field textarea:focus,.dev-field select:focus,.dev-code:focus{border-color:var(--dev-accent)}.dev-field textarea{min-height:86px;resize:vertical}
+.dev-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.dev-actions button{padding:8px 10px!important}
+.dev-list{display:grid;gap:6px}.dev-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border:1px solid #30383d;border-radius:5px;background:#1a1f22}.dev-item button{font-size:11px!important;padding:5px 8px!important}.dev-item-main{min-width:0;overflow-wrap:anywhere}.dev-item-main strong{display:block;font-size:12px;font-weight:600}.dev-item-main small{display:block;color:var(--dev-muted);font-size:10px;margin-top:2px}
+.dev-note{color:var(--dev-muted);font-size:11px;line-height:1.5;margin:7px 0 0}.dev-code{height:calc(100% - 64px);min-height:300px;resize:none;white-space:pre;tab-size:2}.dev-code-wrap{height:100%;display:flex;flex-direction:column;gap:8px}.dev-code-actions{display:flex;gap:7px;flex-wrap:wrap}
+body.dev-editing #rt,body.dev-editing #desc,body.dev-editing #chars span,body.dev-editing #acts button,body.dev-editing #hud .hv,body.dev-editing #log .ln{outline:1px dashed #6e9b89;outline-offset:3px;cursor:pointer}
+body.dev-editing #rt:hover,body.dev-editing #desc:hover,body.dev-editing #chars span:hover,body.dev-editing #acts button:hover,body.dev-editing #hud .hv:hover,body.dev-editing #log .ln:hover{outline:2px solid var(--dev-accent);background-color:#26332f55}
+#toast{z-index:220;background:#20272b!important;border:1px solid #53616a!important;color:var(--dev-text)!important;box-shadow:none!important;border-radius:6px!important;text-transform:none!important;letter-spacing:0!important}
+#over{background:#101214!important}#otitle{font-family:system-ui,sans-serif!important}
+@media(max-width:760px){
+ #devbar{min-height:48px;padding:6px 8px;gap:7px}.devbrand{font-size:11px}.devbar-actions{gap:4px}.devbar-actions button{font-size:10px!important;padding:6px 8px!important;min-height:32px}
+ #game{padding:calc(env(safe-area-inset-top) + 112px) 10px calc(env(safe-area-inset-bottom) + 24px)!important}
+ #game header{top:48px!important;padding:8px 10px!important;grid-template-columns:minmax(0,1fr) auto!important}
+ #devpanel{top:auto;left:0;right:0;bottom:0;width:100%;height:min(78dvh,690px);max-height:calc(100dvh - 48px);border-radius:12px 12px 0 0;border-bottom:0}
+ .dev-inspector{padding:12px 14px calc(env(safe-area-inset-bottom) + 18px)}
+ .dev-code{min-height:230px}
+}
+@media(prefers-reduced-motion:reduce){#devpanel{transition:none!important}}
+
+/* ===== VESPER DEVELOPER: skin fixa, sem efeitos de interface ===== */
+:root{--lamp:var(--dev-accent)!important;--rose:var(--dev-accent)!important;--ln:var(--dev-line)!important;scrollbar-color:#59636a #171a1d!important}
+html,body,*{scrollbar-color:#59636a #171a1d!important}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-track{background:#171a1d!important;border:0!important;box-shadow:none!important}
+*::-webkit-scrollbar-thumb{background:#59636a!important;border:2px solid #171a1d!important;border-radius:5px!important;box-shadow:none!important}
+*::-webkit-scrollbar-thumb:hover{background:#75818a!important;box-shadow:none!important}
+*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+#rt,#desc,#chars span{transition:none!important}
+#devpanel{transition:none!important}
+#bcor,#mbcor,#clr,#clrs{display:none!important}
+#hud .hv{--c:var(--dev-accent)!important}
+#hud .bar i{background:var(--dev-accent)!important}
+#hud .pips span.on,#hud .s-number .hn{color:var(--dev-accent)!important}
+#hud .s-flag.on .hn{background:var(--dev-accent)!important;border-color:var(--dev-accent)!important}
+.hud-float{display:none!important}
+
+/* Aparência fixa do Developer: sem typewriter, pulsos, glitch ou troca de paleta. */
+:root{--dev-bg:#101214;--dev-panel:#171a1d;--dev-line:#30363b;--dev-text:#e7eaec;--dev-muted:#929ba2;--dev-accent:#9dd6c4;--ac:#58636b!important;--ac2:#58636b!important;--lamp:var(--dev-accent)!important;--rose:var(--dev-muted)!important}
+html,body,*{scrollbar-color:#58636b #1a1e21!important;scrollbar-width:thin!important}
+*::-webkit-scrollbar{width:9px;height:9px}*::-webkit-scrollbar-track{background:#1a1e21!important;border:0!important}*::-webkit-scrollbar-thumb{background:#58636b!important;border:2px solid #1a1e21!important;border-radius:5px!important;box-shadow:none!important}
+*,*::before,*::after{animation:none!important;transition:none!important}
+#bcor,#mbcor,#clr{display:none!important}
+.wr>span::after,.tag::before{display:none!important}
+
+</style>
+</head>
+<body>
+<main id="home">
+  <h1 data-t="VESPER">VESPER</h1>
+  <p class="tag">DEVELOPER · editor visual de histórias .vyr</p>
+  <ul class="boot"><li><b>[ ONLINE ]</b> núcleo lua · fengari</li><li><b>[ ·· ]</b> aguardando história .vyr</li></ul>
+  <div id="drop" class="pan">
+    <p>Carregue uma história .vyr para jogar, editar e exportar.</p>
+    <div class="row"><button class="p" id="pick">Abrir projeto .vyr</button><button id="loadTemplate" type="button">Carregar template</button></div>
+    <input id="file" type="file" accept=".vyr,.lua,.txt" hidden>
+  </div>
+  <div id="herr" class="pan err" hidden></div>
+  <div id="lib" class="pan" hidden><p class="lbl">Histórias neste navegador</p></div>
+</main>
+
+<main id="create" hidden>
+  <section class="pan">
+    <h2 id="ctitle"></h2>
+    <p id="cdesc"></p>
+    <div id="cfields"></div>
+    <div class="row" style="justify-content:flex-start"><button class="p" id="cgo">Começar</button><button id="cback">Voltar ao início</button></div>
+  </section>
+</main>
+
+<main id="game" hidden>
+  <header>
+    <h2 id="gt"></h2>
+    <div id="clk"><span id="wd"></span><b id="hm"></b></div>
+    <div class="row header-actions"><button id="bsave" disabled>Carregar</button><button id="bexit">Sair</button></div>
+  </header>
+  <div class="grid">
+    <div>
+      <section id="room" class="pan"><h3 id="rt"></h3><p id="desc"></p><div id="chars"></div></section>
+      <section id="stage" class="pan" hidden><div id="log"></div><div id="ctl"></div></section>
+      <section id="acts"></section>
+    </div>
+    <aside id="side" aria-label="Painel de variáveis e inventário" aria-hidden="true">
+      <div class="sidehead"><span>PAINEL DE DADOS</span><button id="bpanelclose" type="button" aria-label="Fechar painel">×</button></div>
+      <details class="fold" id="hudFold" open><summary>Variáveis</summary><section class="pan" id="hud" hidden></section></details>
+      <details class="fold" id="invFold"><summary>Inventário</summary><section class="pan" id="inv"><p class="lbl">Inventário</p></section></details>
+      <div class="mobile-actions" aria-label="Ações do jogo"><button id="mbsave" type="button" disabled>Carregar</button><button id="mbexit" type="button">Sair</button></div>
+    </aside>
+  </div>
+</main>
+<div id="devbar" hidden aria-label="Ferramentas de desenvolvimento">
+  <div class="devbrand">VESPER <span>DEV</span></div>
+  <div class="devbar-actions">
+    <button id="devPlay" class="dev-active" type="button">Jogar</button>
+    <button id="devEdit" type="button">Editar cena</button>
+    <button id="devCode" type="button">Código .vyr</button>
+    <button id="devLoad" type="button">Abrir</button>
+    <button id="devSave" class="dev-primary" type="button">Salvar .vyr</button>
+    <button id="devHome" type="button" aria-label="Voltar ao início">×</button>
+  </div>
+</div>
+<aside id="devpanel" hidden aria-label="Inspetor de desenvolvimento">
+  <div class="devpanel-head"><div><small>INSPECTOR</small><strong id="devPanelTitle">Ambiente</strong></div><button id="devClose" type="button" aria-label="Fechar inspetor">×</button></div>
+  <nav class="devtabs">
+    <button data-dev-tab="room" class="selected">Ambiente</button>
+    <button data-dev-tab="scenes">Cenas</button>
+    <button data-dev-tab="objects">Objetos</button>
+    <button data-dev-tab="characters">Personagens</button>
+    <button data-dev-tab="variables">Variáveis</button>
+    <button data-dev-tab="hud">HUD</button>
+    <button data-dev-tab="code">Código</button>
+  </nav>
+  <div id="devInspector" class="dev-inspector"></div>
+</aside>
+<input id="devFile" type="file" accept=".vyr,.lua,.txt" hidden>
+<div id="panelShade" aria-hidden="true"></div>
+
+<div id="over" hidden role="alertdialog" aria-modal="true" aria-labelledby="otitle" aria-describedby="otext">
+  <div class="ob">
+    <p id="otag"></p><h2 id="otitle"></h2><p id="otext"></p><p id="ocount"></p>
+    <div class="row" id="oacts" hidden><button class="p" id="oretry">Jogar de novo</button><button id="oload">Carregar jogo</button><button id="omenu">Menu</button></div>
+  </div>
+</div>
+
+<dialog id="ask"><h3 id="askt"></h3><p id="askl" style="color:var(--lamp);margin:10px 0 0"></p><p id="askd" class="lbl"></p><p id="askn"></p><div class="row" style="justify-content:flex-start"><button class="p" id="askload">Carregar</button><button id="asknew">Novo jogo</button><button id="askx">Cancelar</button></div></dialog>
+
+<div id="toast"></div>
+
+
+
+<script id="lua" type="text/plain">
+local R={room={},scene={},char={},event={},item={},sched={},ending={},proj={},world={},vars0={},ord={room={},scene={},char={},event={},item={},sched={},ending={}}}
+local S,Q,cur,waiting,errs,EQ={},{},nil,nil,{},{}
+local busy,adv,pend=false,false,0
+local DAYS={"monday","tuesday","wednesday","thursday","friday","saturday","sunday"}
+local PT={"segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado","domingo"}
+local WI={} for i,d in ipairs(DAYS) do WI[d]=i-1 end
+local TRIG={enter_room=1,leave_room=1,time=1,action_completed=1,item_gained=1,item_removed=1,state_changed=1,day_started=1,character_state_changed=1,custom=1}
+local function copy(t) if type(t)~="table" then return t end local c={} for k,v in pairs(t) do c[k]=copy(v) end return c end
+-- Evita que um loop dentro de um evento/cena bloqueie a página inteira.
+-- O limite é renovado a cada pausa da corrotina, permitindo cenas longas e interativas.
+local function resumeLimited(co,...)
+ local hits,hooked=0,false
+ if debug and type(debug.sethook)=="function" then
+  hooked=pcall(debug.sethook,co,function()
+   hits=hits+1
+   if hits>=500 then error("Limite de execução excedido (500 mil instruções). Verifique loops sem pausa em eventos/cenas.",0) end
+  end,"",1000)
+ end
+ local ok,r=coroutine.resume(co,...)
+ if hooked then pcall(debug.sethook,co,nil) end
+ return ok,r
+end
+local function callLimited(fn,...)
+ local co=coroutine.create(fn)
+ local ok,r=resumeLimited(co,...)
+ if ok and coroutine.status(co)~="dead" then return false,"Uma condição/descrição não pode pausar a execução." end
+ return ok,r
+end
+local function J(v) local t=type(v)
+ if t=="string" then return '"'..v:gsub('[%c"\\]',function(c) return string.format("\\u%04x",c:byte()) end)..'"'
+ elseif t=="table" then local a={}
+  if #v>0 or next(v)==nil then for i,x in ipairs(v) do a[i]=J(x) end return "["..table.concat(a,",").."]" end
+  for k,x in pairs(v) do a[#a+1]=J(tostring(k))..":"..J(x) end return "{"..table.concat(a,",").."}"
+ elseif t=="number" or t=="boolean" then return tostring(v) end return "null" end
+local function ser(v) local t=type(v)
+ if t=="string" then return string.format("%q",v) elseif t=="table" then local a={}
+  for k,x in pairs(v) do a[#a+1]="["..ser(k).."]="..ser(x) end return "{"..table.concat(a,",").."}" end return tostring(v) end
+local function hm(s) local h,m=tostring(s):match("^(%d+):(%d+)$") if not h then return nil end return h*60+m end
+local function rnd() S.seed=(S.seed*1103515245+12345)%2147483648 return S.seed/2147483648 end
+local function interp(s) if type(s)~="string" or not s:find("{",1,true) then return s end
+ s=s:gsub("{player%.([%w_]+)}",function(k) local v=S.pshow and S.pshow[k] if v==nil and S.player then v=S.player[k] end
+  if type(v)=="table" then v=table.concat(v,", ") end if v==nil then return "" end return tostring(v) end)
+ s=s:gsub("{var%.([%w_]+)}",function(k) local v=S.vars and S.vars[k] if v==nil then return "" end return tostring(v) end)
+ return s end
+local function test(f,c) if f==nil then return true end if type(f)~="function" then return f and true or false end
+ local ok,r=callLimited(f,c or {}) if not ok then errs[#errs+1]=tostring(r) return false end return r and true or false end
+local function calc() local d=S.t//1440 return S.day0+d,(S.wd0+d)%7,S.t%1440//60,S.t%60 end
+local function reg(cat,id,def)
+ if type(id)~="string" or id=="" then error("ID inválido em "..cat,3) end
+ if R[cat][id] then error('Identificador duplicado em '..cat..': "'..id..'"',3) end
+ if type(def)~="table" then error(cat..' "'..id..'": a definição deve ser uma tabela',3) end
+ local ok,i=pcall(debug.getinfo,3,"l") def._line=ok and i and i.currentline or nil
+ def.id=id R[cat][id]=def local o=R.ord[cat] o[#o+1]=id end
+-- eventos
+local cb,fire,exec
+function cb(fn,ctx,eventId) local fr={co=coroutine.create(fn),eventId=eventId,eventContext=eventId and copy(ctx or {}) or nil}
+ local ok,r=resumeLimited(fr.co,ctx)
+ if not ok then errs[#errs+1]=tostring(r) elseif coroutine.status(fr.co)~="dead" then fr.pend=r Q[#Q+1]={fr} end end
+local function match(ev,c)
+ for _,f in ipairs{"room","key","item","action"} do if ev[f] and ev[f]~=c[f] then return false end end
+ local t=ev.trigger
+ if t=="enter_room" or t=="leave_room" then if (ev.character or "player")~=c.actor then return false end
+ elseif ev.character and ev.character~=(c.character or c.actor) then return false end
+ if t=="custom" and ev.event~=c.event then return false end
+ return true end
+function exec(ev,c)
+ if ev.once and S.done[ev.id] then return end
+ if not test(ev.conditions,c) then return end
+ if ev.chance and rnd()*100>=ev.chance then return end
+ if ev.once then S.done[ev.id]=true end
+ if ev.execute then cb(ev.execute,c,ev.id) end
+ if ev.game_over then local eid=ev.game_over cb(function() coroutine.yield({op="OVER",id=eid}) end) end end
+function fire(trig,c) c=c or {} c.trigger=trig c.event=c.event or trig c.actor=c.actor or "player"
+ EQ[#EQ+1]={trig,c} if busy then return end
+ busy=true local n=0
+ while #EQ>0 and n<500 do n=n+1 local e=table.remove(EQ,1)
+  for _,ev in ipairs(R.evlist) do if ev.trigger==e[1] and match(ev,e[2]) then exec(ev,e[2]) end end end
+ if #EQ>0 then errs[#errs+1]="Limite de eventos excedido (possível ciclo)." EQ={} end
+ busy=false end
+-- estado
+local function setv(k,v) local o=S.vars[k] S.vars[k]=v if o~=v then fire("state_changed",{key=k,value=v,old=o}) end end
+local function cset(id,k,v) local c=S.chars[id] local o=c.state[k] c.state[k]=v if o~=v then fire("character_state_changed",{character=id,key=k,value=v,old=o}) end end
+local function moveto(id,room) local c=S.chars[id] local old=c.room if old==room then return end
+ fire("leave_room",{actor=id,room=old,next_room=room}) c.room=room fire("enter_room",{actor=id,room=room,previous_room=old}) end
+local function pmove(room) local old=S.room
+ fire("leave_room",{actor="player",room=old,next_room=room}) S.room=room fire("enter_room",{actor="player",room=room,previous_room=old}) if R.room[room] and R.room[room].save then S.savereq=S.savereq or true end end
+-- scheduler
+local function occ(a,b) local out={} local d0,d1=a//1440,b//1440
+ for d=d0,math.min(d1,d0+4000) do local base=d*1440 local day,wd=S.day0+d,(S.wd0+d)%7
+  if base>a and base<=b then out[#out+1]={at=base,cls=0,o=0,day=day} end
+  for _,it in ipairs(R.timed) do local at=base+it.m
+   if at>a and at<=b and it.ok(day,wd) then out[#out+1]={at=at,cls=it.cls,o=it.o,it=it} end end end
+ table.sort(out,function(x,y) if x.at~=y.at then return x.at<y.at end if x.cls~=y.cls then return x.cls<y.cls end return x.o<y.o end)
+ return out end
+local function proc(x) S.t=x.at
+ if x.day then local _,wd=calc() fire("day_started",{day=x.day,weekday=DAYS[wd+1]}) return end
+ local it=x.it
+ if it.ev then local ev=it.ev
+  if not ev.repeat_mode then if S.fired[ev.id] then return end S.fired[ev.id]=true end
+  exec(ev,{trigger="time",event="time",actor="world"})
+ elseif test(it.e.conditions,{character=it.ch}) then
+  if it.e.room then moveto(it.ch,it.e.room) end
+  if it.e.state then cset(it.ch,"activity",it.e.state) end end end
+local function advance(n,why) n=math.floor(tonumber(n) or 0) if n<=0 then return end
+ if adv then pend=pend+n return end
+ adv=true
+ local ok,e=pcall(function() local tgt=S.t+n
+  while true do for _,x in ipairs(occ(S.t,tgt)) do proc(x) end S.t=tgt
+   if pend>0 then tgt=tgt+pend pend=0 else break end end end)
+ adv=false pend=0 if not ok then errs[#errs+1]=tostring(e) end end
+-- cenas
+local function mkframe(id) local s=R.scene[id]
+ if not s then error('Cena inexistente: "'..tostring(id)..'"',3) end return {co=coroutine.create(s.fn),id=id} end
+local function pump(val) local out={} local steps=0
+ while true do
+  steps=steps+1
+  if steps>4000 then
+   out[#out+1]={op="ERR",text="Limite de processamento de cenas excedido. Verifique cenas que iniciam a si mesmas em sequência."}
+   Q={} cur=nil break
+  end
+  if not cur then cur=table.remove(Q,1) if not cur then break end end
+  local fr=cur[#cur] local cmd
+  if fr.pend then cmd=fr.pend fr.pend=nil
+  else local ok,r=resumeLimited(fr.co,val) val=nil
+   if not ok then out[#out+1]={op="ERR",text=tostring(r)} cur=nil
+   elseif coroutine.status(fr.co)=="dead" then cmd={op="RET",value=r} else cmd=r end end
+  if cur then local op=type(cmd)=="table" and cmd.op or nil
+   if op=="SAY" or op=="CLEAR" then out[#out+1]=cmd
+   elseif op=="OVER" then S.over=cmd.id S.pendover=nil cur=nil Q={} waiting=nil break
+   elseif op=="WAIT" or op=="CHOICE" then out[#out+1]=cmd waiting=cmd return out
+   elseif op=="DELAY" then advance(cmd.n,"scene")
+   elseif op=="CALL" then local ok,f=pcall(mkframe,cmd.id) if ok then cur[#cur+1]=f else out[#out+1]={op="ERR",text=tostring(f)} cur=nil end
+   elseif op=="JUMP" then local ok,f=pcall(mkframe,cmd.id) if ok then cur[#cur]=f else out[#out+1]={op="ERR",text=tostring(f)} cur=nil end
+   elseif op=="RET" or op=="END" then cur[#cur]=nil if #cur==0 then cur=nil else val=cmd.value end
+   else out[#out+1]={op="ERR",text="Comando de cena inválido (use as funções Narrator/Scene)."} cur=nil end end
+ end
+ if S.pendover then S.over=S.pendover S.pendover=nil end
+ return out end
+-- visão
+local function view()
+ local r=R.room[S.room] local ctx={room=S.room,actor="player"}
+ local d=r.description if type(d)=="function" then local ok,v=callLimited(d,ctx) d=ok and v or ("[erro: "..tostring(v).."]") end
+ local ex,ac,ch,inv={},{},{},{}
+ for _,x in ipairs(r.exits or {}) do
+  if not (x.hidden and not S.shown[r.id..":"..x.id]) and test(x.conditions,ctx) then
+   ex[#ex+1]={id=x.id,label=x.label or ("Ir para "..(R.room[x.to].title or x.to)),dur=x.duration or 0,line=x._line or r._line or 0} end end
+ for _,x in ipairs(r.actions or {}) do
+  if not (x.hidden and not S.shown[r.id..":"..x.id]) and test(x.conditions,ctx) then ac[#ac+1]={id=x.id,label=x.label or x.id,dur=x.duration or 0,line=x._line or r._line or 0} end end
+ for _,id in ipairs(R.ord.char) do local c=S.chars[id] if c and c.room==S.room then ch[#ch+1]={id=id,name=R.char[id].name or id,act=c.state.activity,line=R.char[id]._line or 0} end end
+ for _,id in ipairs(R.ord.item) do local n=S.inv[id] if n and n>0 then local it=R.item[id] inv[#inv+1]={id=id,title=it.title or id,desc=it.description,n=n,use=it.use~=nil} end end
+ local hud={}
+ for _,hh in ipairs(R.hud or {}) do
+  if not S.hudoff[hh.var] and test(hh.conditions,{}) then
+   local mx=hh.max if type(mx)=="string" then mx=S.vars[mx] end
+   hud[#hud+1]={key=hh.var,label=interp(hh.label or hh.var),style=hh.style or "text",value=S.vars[hh.var],max=mx,min=hh.min,color=hh.color,prefix=hh.prefix,suffix=hh.suffix,decimals=hh.decimals,icon=hh.icon,on=hh.on_label,off=hh.off_label,show_value=hh.show_value,warn=hh.warn,line=R.hudline or 0} end end
+ local day,wd,h,m=calc()
+ local descLine=r._line or 0
+ if type(r.description)=="function" then local di=debug.getinfo(r.description,"S") descLine=di and di.linedefined or descLine end
+ return {rid=S.room,roomline=r._line or 0,descline=descLine,hud=hud,title=interp(r.title or r.id),desc=interp(d or ""),exits=ex,acts=ac,chars=ch,inv=inv,day=day,wd=PT[wd+1],h=h,m=m,theme=(S.theme and next(S.theme)) and S.theme or nil}
+end
+local function idle() return waiting==nil and cur==nil and #Q==0 and not S.over and not S.creating end
+local function endinfo(id) local e=R.ending[id] local t=e.description
+ if type(t)=="function" then local ok,v=callLimited(t,{}) t=ok and v or ("[erro: "..tostring(v).."]") end
+ local n for i,x in ipairs(R.ord.ending) do if x==id then n=i end end
+ return {id=id,title=interp(e.title or id),text=interp(t or ""),kind=e.kind or "bad",n=n,total=#R.ord.ending} end
+local function reply(out) out=out or pump() local e=errs errs={}
+ local ov if S.over then ov=endinfo(S.over) end
+ local sv if S.savereq and idle() then local lb=S.savereq S.savereq=nil sv={label=type(lb)=="string" and lb or "",data=ser{pid=R.proj.id,ver=R.proj.version,S=S}} end
+ return J{out=out,view=view(),errs=e,waiting=waiting~=nil,idle=idle(),proj=R.proj,over=ov,creation=S.creating and R.creation or nil,save=sv} end
+local function find(list,id) for _,x in ipairs(list or {}) do if x.id==id then return x end end end
+local function startscene(id) Q[#Q+1]={mkframe(id)} end
+-- API
+local y=coroutine.yield
+local env={}
+for _,k in ipairs{"pairs","ipairs","type","tostring","tonumber","select","pcall","error","next","assert"} do env[k]=_G[k] end
+env.string,env.table=string,table
+env.math=setmetatable({random=function(a,b) local r=rnd() if not a then return r end if not b then a,b=1,a end return a+math.floor(r*(b-a+1)) end},{__index=math})
+env.Project={create=function(d) if type(d)~="table" or not d.id then error("Project.create exige uma tabela com id",2) end R.proj={id=d.id,title=d.title or d.id,version=d.version or "0",author=d.author,description=d.description} end}
+env.Variables={define=function(t) local i=debug.getinfo(2,"l") R.varline=i and i.currentline or nil for k,v in pairs(t) do R.vars0[k]=v end end}
+env.World={create=function(n,f) R.world.name=n if f then f() end end,
+ start=function(r) R.world.start=r end,clock=function(c) R.world.clock=c end,intro=function(s) R.world.intro=s end,
+ current=function() return {name=R.world.name,room=S.room} end,player_room=function() return S.room end,
+ room_exists=function(r) return R.room[r]~=nil end,
+ move=function(r) local x for _,e in ipairs(R.room[S.room].exits or {}) do if e.to==r then x=e break end end
+  if not x then error('World.move: não há saída de "'..S.room..'" para "'..tostring(r)..'"',2) end
+  advance(x.duration or 0,"move") pmove(r) end}
+env.Room={create=function(id,d) local i=debug.getinfo(2,"l") local line=i and i.currentline or nil
+ reg("room",id,d) d._line=line for _,l in ipairs{d.exits or {},d.actions or {}} do for _,x in ipairs(l) do x.rid=id x.id=x.id or x.to x._line=x._line or line end end end,
+ exists=function(r) return R.room[r]~=nil end,reveal=function(r,e) S.shown[r..":"..e]=true end}
+-- API do Vesper Developer: alterações visuais podem ser aplicadas em execução
+-- e exportadas como um bloco Dev.apply(...) ao final do arquivo .vyr.
+local function devList(list,updates,removes,kind)
+ local rm,up,seen={},{},{}
+ for _,id in ipairs(removes or {}) do rm[tostring(id)]=true end
+ for _,x in ipairs(updates or {}) do if x.id then up[tostring(x.id)]=x end end
+ local out={}
+ for _,x in ipairs(list or {}) do
+  local id=tostring(x.id or x.to or "") local u=up[id]
+  if not rm[id] then
+   if u then
+    for _,k in ipairs(kind=="exit" and {"label","to","duration","scene","save","hidden"} or {"label","duration","scene","save","hidden"}) do if u[k]~=nil then x[k]=u[k] end end
+    seen[id]=true
+   end
+   out[#out+1]=x
+  end
+ end
+ for id,u in pairs(up) do if not seen[id] and not rm[id] then
+  local x={id=id,label=u.label or id,duration=tonumber(u.duration) or 0}
+  if kind=="exit" then x.to=u.to end
+  if u.scene then x.scene=u.scene end
+  if u.save~=nil then x.save=u.save end
+  if u.hidden~=nil then x.hidden=u.hidden end
+  out[#out+1]=x
+ end end
+ return out
+end
+local function devApply(p)
+ p=type(p)=="table" and p or {}
+ for id,x in pairs(p.rooms or {}) do
+  local r=R.room[id]
+  if not r then r={id=id,title=tostring(x.title or id),description=tostring(x.description or ""),exits={},actions={}} R.room[id]=r R.ord.room[#R.ord.room+1]=id end
+  if r then
+   if x.title~=nil then r.title=tostring(x.title) end
+   if x.description~=nil then r.description=tostring(x.description) end
+   if x.exits or x.removeExits then r.exits=devList(r.exits,x.exits,x.removeExits,"exit") end
+   if x.actions or x.removeActions then r.actions=devList(r.actions,x.actions,x.removeActions,"action") end
+  end
+ end
+ for id,x in pairs(p.characters or {}) do
+  local d=R.char[id]
+  if not d and x.create and R.room[x.initial_room or x.room] then
+   d={name=tostring(x.name or id),initial_room=x.initial_room or x.room,state={activity=x.activity or ""}}
+   R.char[id]=d R.ord.char[#R.ord.char+1]=id
+   S.chars[id]={room=d.initial_room,state=copy(d.state)}
+  end
+  if d then
+   if x.name~=nil then d.name=tostring(x.name) end
+   if x.initial_room~=nil and R.room[x.initial_room] then d.initial_room=x.initial_room end
+   if x.activity~=nil then d.state=d.state or {} d.state.activity=x.activity end
+   local c=S.chars[id]
+   if c then
+    if x.initial_room~=nil and R.room[x.initial_room] then c.room=x.initial_room end
+    if x.room~=nil and R.room[x.room] then c.room=x.room end
+    if x.activity~=nil then c.state.activity=x.activity end
+   end
+  end
+ end
+ for _,k in ipairs(p.removeVariables or {}) do R.vars0[k]=nil if S.vars then S.vars[k]=nil end end
+ for k,v in pairs(p.variables or {}) do R.vars0[k]=copy(v) if S.vars then S.vars[k]=copy(v) end end
+ if p.hud then
+  local existing={} for _,h in ipairs(R.hud or {}) do existing[h.var]=h end
+  local nextHud={}
+  for _,h in ipairs(p.hud) do
+   local item=existing[h.var] or {var=h.var}
+   for _,k in ipairs{"label","style","max","min","color","prefix","suffix","decimals","icon","on_label","off_label","show_value","warn"} do
+    if h[k]~=nil then item[k]=h[k] end
+   end
+   nextHud[#nextHud+1]=item
+  end
+  R.hud=nextHud
+ end
+ if p.project then
+  if p.project.title~=nil then R.proj.title=tostring(p.project.title) end
+  if p.project.version~=nil then R.proj.version=tostring(p.project.version) end
+  if p.project.author~=nil then R.proj.author=tostring(p.project.author) end
+ end
+ if p.world and p.world.start and R.room[p.world.start] then R.world.start=p.world.start end
+ return true
+end
+env.Dev={apply=devApply}
+-- Efeitos para Narrator.say / Character.say:
+-- shake, wave, rainbow, glitch, neon e pulse.
+-- Ex.: Narrator.say("A tela falha...", {effect="glitch", color="#ff2bd6", speed=28})
+-- Ex.: Character.say("ana", "Olá.", {effect="wave"})
+local TEXT_FX={shake=true,wave=true,rainbow=true,glitch=true,neon=true,pulse=true}
+local sayBindings,saySeq={},0
+local function captureSayBinding(sourceLine)
+ local info=debug.getinfo(4,"Slf")
+ saySeq=saySeq+1
+ local id="say_"..saySeq
+ local locals,ups={},{}
+ if info then
+  local i=1
+  while true do local n,v=debug.getlocal(4,i);if not n then break end;if n:sub(1,1)~="(" then locals[n]=v end;i=i+1 end
+  if info.func then
+   i=1;while true do local n,v=debug.getupvalue(info.func,i);if not n then break end;if n~="_ENV" then ups[n]=v end;i=i+1 end
+  end
+ end
+ local line=tonumber(sourceLine) or (info and info.currentline) or 0
+ sayBindings[id]={locals=locals,upvalues=ups,line=line}
+ return id,line
+end
+local function sayText(text,who,opts,kind,sourceLine)
+ opts=type(opts)=="table" and opts or {}
+ local effect=opts.effect
+ if effect~=nil and effect~="" and not TEXT_FX[effect] then
+  error('Efeito de texto inválido "'..tostring(effect)..'". Use shake, wave, rainbow, glitch, neon ou pulse.',3)
+ end
+ local color=opts.color
+ if color~=nil and (type(color)~="string" or not color:match("^#%x%x%x%x%x%x$")) then
+  error('A cor do texto precisa estar no formato "#rrggbb".',3)
+ end
+ local speed=opts.speed
+ if speed~=nil then
+  speed=tonumber(speed)
+  if not speed or speed<5 or speed>120 then error("Text speed deve ficar entre 5 e 120 milissegundos por caractere.",3) end
+ end
+ local bind,line=captureSayBinding(sourceLine)
+ local frame=cur and cur[#cur]
+ return y{op="SAY",who=who,text=interp(tostring(text)),effect=effect,color=color,speed=speed,line=line,scene=frame and frame.id or nil,bind=bind,kind=kind}
+end
+env.Narrator={say=function(t,opts) local caller=debug.getinfo(2,"l") return sayText(t,nil,opts,"Narrator.say",caller and caller.currentline) end}
+env.Scene={create=function(id,fn) if type(fn)~="function" then error("Scene.create exige uma função",2) end local i=debug.getinfo(2,"l") local d={fn=fn} reg("scene",id,d) d._line=i and i.currentline or d._line end,
+ start=function(id) startscene(id) end,call=function(id) return y{op="CALL",id=id} end,jump=function(id) return y{op="JUMP",id=id} end,
+ return_scene=function(v) return y{op="RET",value=v} end,end_scene=function() return y{op="END"} end,
+ wait=function() return y{op="WAIT"} end,delay=function(n) return y{op="DELAY",n=n} end,
+ choice=function(opts) local o={} local i=debug.getinfo(2,"l") local line=i and i.currentline or nil for _,x in ipairs(opts) do if x.id and x.text and test(x.conditions,{}) then
+   -- text é o rótulo do botão; say é opcional e só ele gera uma fala do jogador.
+   o[#o+1]={id=x.id,text=interp(x.text),say=x.say and interp(x.say) or nil,line=line}
+  end end
+  if #o==0 then return nil end return y{op="CHOICE",options=o} end}
+env.Character={create=function(id,d) local i=debug.getinfo(2,"l") reg("char",id,d) d._line=i and i.currentline or d._line end,exists=function(i) return R.char[i]~=nil end,
+ get=function(i) local c=S.chars[i] if not c then return nil end return {id=i,name=R.char[i].name,room=c.room,state=copy(c.state)} end,
+ room=function(i) return S.chars[i] and S.chars[i].room end,
+ move=function(i,r) if not S.chars[i] or not R.room[r] then error("Character.move: personagem ou ambiente inexistente",2) end moveto(i,r) end,
+ say=function(i,t,o) if not R.char[i] then error('Personagem inexistente: "'..tostring(i)..'"',2) end o=o or {}
+  local caller=debug.getinfo(2,"l")
+  return sayText(t,R.char[i].name or i,o,"Character.say",caller and caller.currentline) end,
+ get_state=function(i,k) return S.chars[i] and S.chars[i].state[k] end,
+ set_state=function(i,k,v) if not S.chars[i] then error("Character.set_state: personagem inexistente",2) end cset(i,k,v) end}
+env.Event={create=function(id,d) if not TRIG[d.trigger] then error('Evento "'..tostring(id)..'": gatilho inválido "'..tostring(d.trigger)..'"',2) end reg("event",id,d) end,
+ emit=function(n,data) local c=copy(data or {}) c.event=n fire("custom",c) end}
+env.Schedule={create=function(id,d) reg("sched",id,d) end}
+env.Time={day=function() return (calc()) end,weekday=function() local _,w=calc() return DAYS[w+1] end,
+ weekday_name=function() local _,w=calc() return PT[w+1] end,weekday_index=function() local _,w=calc() return w+1 end,
+ is_weekday=function() local _,w=calc() return w<5 end,is_weekend=function() local _,w=calc() return w>=5 end,
+ hour=function() local _,_,h=calc() return h end,minute=function() local _,_,_,m=calc() return m end,
+ now=function() local d,w,h,m=calc() return {day=d,weekday=DAYS[w+1],hour=h,minute=m,absolute=S.t} end,
+ advance=function(n) advance(n,"story") end,is_day=function() local _,_,h=calc() return h>=6 and h<18 end,
+ is_night=function() local _,_,h=calc() return h<6 or h>=18 end,
+ compare=function(s) local x=hm(s) if not x then error("Time.compare espera 'HH:MM'",2) end local n=S.t%1440 return n<x and -1 or n>x and 1 or 0 end}
+env.State={get=function(k) return S.vars[k] end,set=setv,exists=function(k) return S.vars[k]~=nil end,
+ add=function(k,n) setv(k,(S.vars[k] or 0)+n) end,subtract=function(k,n) setv(k,(S.vars[k] or 0)-n) end,
+ toggle=function(k) setv(k,not S.vars[k]) end,reset=function(k) setv(k,copy(R.vars0[k])) end}
+env.Item={define=function(id,d) reg("item",id,d) end}
+env.Inventory={give=function(id,n) n=n or 1 if not R.item[id] then error('Item inexistente: "'..tostring(id)..'"',2) end
+  if type(n)~="number" or n<=0 then error("Quantidade inválida",2) end S.inv[id]=(S.inv[id] or 0)+n fire("item_gained",{item=id,amount=n}) end,
+ remove=function(id,n) n=n or 1 if type(n)~="number" or n<=0 then error("Quantidade inválida",2) end
+  if (S.inv[id] or 0)<n then error('Remoção inconsistente: não há '..n..' de "'..tostring(id)..'"',2) end
+  S.inv[id]=S.inv[id]-n if S.inv[id]==0 then S.inv[id]=nil end fire("item_removed",{item=id,amount=n}) end,
+ has=function(id) return (S.inv[id] or 0)>0 end,count=function(id) return S.inv[id] or 0 end,clear=function() S.inv={} end,
+ list=function() local l={} for id,n in pairs(S.inv) do l[#l+1]={id=id,count=n} end return l end,
+ use=function(id) local it=R.item[id] if it and it.use and (S.inv[id] or 0)>0 then cb(it.use,{item=id}) end end}
+-- criação, variáveis visíveis, finais, console
+env.Creation={define=function(d)
+ if type(d)~="table" or type(d.fields)~="table" or #d.fields==0 then error("Creation.define exige uma tabela com fields (lista de campos)",2) end
+ local i=debug.getinfo(2,"l") d._line=i and i.currentline or nil R.creation=d end}
+env.Player={get=function(k) return copy(S.player[k]) end,
+ set=function(k,v) S.player[k]=v S.pshow[k]=type(v)=="table" and table.concat(v,", ") or v end,
+ name=function() return S.player.nome or S.player.name end,
+ has=function(k,id) local v=S.player[k] if type(v)=="table" then for _,x in ipairs(v) do if x==id then return true end end return false end return v==id end}
+env.HUD={define=function(l)
+  if type(l)~="table" then error("HUD.define exige uma lista de itens",2) end
+  local i=debug.getinfo(2,"l") R.hud={} R.hudline=i and i.currentline or nil
+  for n,h in ipairs(l) do if type(h)~="table" then error("HUD.define: o item "..n.." deve ser uma tabela",2) end R.hud[n]=h end end,
+ show=function(k) S.hudoff[k]=nil end,hide=function(k) S.hudoff[k]=true end}
+env.Console={clear=function() if not coroutine.isyieldable() then error("Console.clear só pode ser usado dentro de cenas, ações ou eventos",2) end return y{op="CLEAR"} end}
+env.Ending={create=function(id,d) reg("ending",id,d) end}
+env.Game={save=function(l) S.savereq=type(l)=="string" and l or true end,over=function(id) if not R.ending[id] then error('Final inexistente: "'..tostring(id)..'"',2) end
+  if coroutine.isyieldable() then return y{op="OVER",id=id} end S.pendover=S.pendover or id end,
+ is_over=function() return S.over~=nil end}
+env.Theme={set=function(t) if type(t)~="table" then error("Theme.set exige uma tabela, ex.: {accent=\"#ff2bd6\"}",2) end
+ for k,v in pairs(t) do if k~="accent" and k~="accent2" and k~="glow" and k~="glow2" then error('Theme.set: campo inválido "'..tostring(k)..'" (use accent, accent2, glow, glow2)',2) end
+  if type(v)~="string" or not v:match("^#%x%x%x%x%x%x$") then error('Theme.set: "'..k..'" precisa ser uma cor "#rrggbb"',2) end S.theme[k]=v end end,
+ reset=function(k) if k then S.theme[k]=nil else S.theme={} end end}
+-- carga, validação, início
+local function bad(k,m,d) return {k,m,d and d._line} end
+local function validate()
+ local w=R.world
+ if not R.proj.id then return bad("Configuração inválida","Project.create({ id, title, version }) não foi chamado.") end
+ if not w.start then return bad("Configuração inválida","World.start(room_id) não foi definido.") end
+ if not R.room[w.start] then return bad("Referência inexistente",'O ambiente inicial "'..tostring(w.start)..'" não existe.') end
+ if w.intro and not R.scene[w.intro] then return bad("Referência inexistente",'A cena inicial "'..w.intro..'" não existe.') end
+ for _,id in ipairs(R.ord.room) do local r=R.room[id]
+  for _,x in ipairs(r.exits or {}) do
+   if not R.room[x.to] then return bad("Referência inexistente",'A saída "'..tostring(x.id)..'" de "'..id..'" leva ao ambiente "'..tostring(x.to)..'", mas não existe nenhum ambiente com esse identificador.',r) end
+   if x.scene and not R.scene[x.scene] then return bad("Referência inexistente",'A cena "'..x.scene..'" (saída "'..x.id..'") não existe.',r) end end
+  for _,x in ipairs(r.actions or {}) do if x.scene and not R.scene[x.scene] then return bad("Referência inexistente",'A cena "'..x.scene..'" (ação "'..x.id..'") não existe.',r) end end end
+ for _,id in ipairs(R.ord.char) do local c=R.char[id]
+  if not R.room[c.initial_room] then return bad("Referência inexistente",'O personagem "'..id..'" começa no ambiente "'..tostring(c.initial_room)..'", que não existe.',c) end end
+ for _,id in ipairs(R.ord.event) do local e=R.event[id]
+  if e.room and not R.room[e.room] then return bad("Referência inexistente",'O evento "'..id..'" usa o ambiente "'..e.room..'", que não existe.',e) end
+  if e.character and not R.char[e.character] then return bad("Referência inexistente",'O evento "'..id..'" usa o personagem "'..e.character..'", que não existe.',e) end
+  if e.trigger=="time" and not hm(e.at) then return bad("Configuração inválida",'O evento "'..id..'" precisa de at = "HH:MM".',e) end
+  for _,d in ipairs(e.weekdays or {}) do if not WI[d] then return bad("Configuração inválida",'Dia da semana inválido "'..tostring(d)..'" no evento "'..id..'".',e) end end end
+ for _,id in ipairs(R.ord.sched) do local s=R.sched[id]
+  if not R.char[s.character] then return bad("Referência inexistente",'A rotina "'..id..'" usa o personagem "'..tostring(s.character)..'", que não existe.',s) end
+  if s.weekly and s.entries then return bad("Configuração inválida",'A rotina "'..id..'" mistura entries e weekly.',s) end
+  local lists={} if s.entries then lists[1]=s.entries end
+  for d,l in pairs(s.weekly or {}) do if not WI[d] then return bad("Configuração inválida",'Dia inválido "'..tostring(d)..'" na rotina "'..id..'".',s) end lists[#lists+1]=l end
+  for _,l in ipairs(lists) do for _,e in ipairs(l) do
+   if not hm(e.at) then return bad("Configuração inválida",'Entrada da rotina "'..id..'" sem at = "HH:MM".',s) end
+   if e.room and not R.room[e.room] then return bad("Referência inexistente",'A rotina "'..id..'" usa o ambiente "'..e.room..'", que não existe.',s) end end end end
+ for _,id in ipairs(R.ord.event) do local e=R.event[id]
+  if e.game_over and not R.ending[e.game_over] then return bad("Referência inexistente",'O evento "'..id..'" usa game_over = "'..tostring(e.game_over)..'", mas não existe nenhum Ending.create com esse identificador.',e) end end
+ for _,id in ipairs(R.ord.ending) do local e=R.ending[id]
+  if type(e.description)~="string" and type(e.description)~="function" then return bad("Configuração inválida",'O final "'..id..'" precisa de description (texto ou função).',e) end end
+ local c=R.creation
+ if c then local CT={text=1,choice=1,multi=1,number=1} local seen={}
+  for i,f in ipairs(c.fields) do
+   if type(f)~="table" or type(f.id)~="string" or f.id=="" then return bad("Configuração inválida","Creation.define: o campo #"..i.." precisa de id (texto).",c) end
+   if seen[f.id] then return bad("Configuração inválida",'Creation.define: o campo "'..f.id..'" aparece duas vezes.',c) end seen[f.id]=true
+   if not CT[f.type] then return bad("Configuração inválida",'Creation.define: o campo "'..f.id..'" tem tipo inválido "'..tostring(f.type)..'" (use text, choice, multi ou number).',c) end
+   if f.type=="choice" or f.type=="multi" then
+    if type(f.options)~="table" or #f.options==0 then return bad("Configuração inválida",'Creation.define: o campo "'..f.id..'" precisa de options.',c) end
+    for _,o in ipairs(f.options) do if type(o)~="table" or o.id==nil or not o.text then return bad("Configuração inválida",'Creation.define: toda opção de "'..f.id..'" precisa de id e text.',c) end end end
+   if f.type=="number" and f.min and f.max and f.min>f.max then return bad("Configuração inválida",'Creation.define: o campo "'..f.id..'" tem min maior que max.',c) end
+  end end
+ if R.hud then local HS={bar=1,number=1,text=1,pips=1,flag=1} local hv={}
+  for k in pairs(R.vars0) do hv[k]=true end
+  if c then for _,f in ipairs(c.fields) do if f.variable then hv[f.variable]=true end end end
+  local d={_line=R.hudline}
+  for i,h in ipairs(R.hud) do
+   if type(h.var)~="string" then return bad("Configuração inválida",'HUD.define: o item '..i..' precisa de var = "nome_da_variavel".',d) end
+   if not hv[h.var] then return bad("Referência inexistente",'HUD.define: a variável "'..h.var..'" não foi definida em Variables.define.',d) end
+   if h.style and not HS[h.style] then return bad("Configuração inválida",'HUD.define: estilo inválido "'..tostring(h.style)..'" em "'..h.var..'" (use bar, number, text, pips ou flag).',d) end
+   if h.style=="bar" and h.max==nil then return bad("Configuração inválida",'HUD.define: a barra "'..h.var..'" precisa de max (número ou nome de uma variável).',d) end
+   if type(h.max)=="string" and not hv[h.max] then return bad("Referência inexistente",'HUD.define: o max "'..h.max..'" da barra "'..h.var..'" não é uma variável definida.',d) end
+  end end
+end
+local function finalize()
+ local ev={} for i,id in ipairs(R.ord.event) do ev[i]=R.event[id] ev[i]._i=i end
+ table.sort(ev,function(a,b) local pa,pb=a.priority or 0,b.priority or 0 if pa~=pb then return pa>pb end return a._i<b._i end)
+ R.evlist=ev R.timed={} local o=0
+ for _,e in ipairs(ev) do if e.trigger=="time" then o=o+1
+  local ws if e.weekdays then ws={} for _,d in ipairs(e.weekdays) do ws[WI[d]]=true end end
+  R.timed[#R.timed+1]={m=hm(e.at),cls=3,o=o,ev=e,ok=function(day,wd)
+   if e.day and e.day~=day then return false end if ws and not ws[wd] then return false end
+   if e.repeat_mode=="weekly" and not ws and wd~=S.wd0 then return false end return true end} end end
+ for _,id in ipairs(R.ord.sched) do local s=R.sched[id]
+  local function add(l,okf) for _,e in ipairs(l) do o=o+1 R.timed[#R.timed+1]={m=hm(e.at),cls=1,o=o,e=e,ch=s.character,ok=okf} end end
+  if s.entries then add(s.entries,function() return true end) end
+  for _,d in ipairs(DAYS) do local l=(s.weekly or {})[d] if l then add(l,function(_,wd) return wd==WI[d] end) end end end
+end
+function V_load(src,name)
+ local f,e=load(src,"="..name,"t",env)
+ if not f then return J{ok=false,kind="Erro de sintaxe Lua",msg=tostring(e)} end
+ S={t=0,day0=1,wd0=0,vars={},chars={},inv={},done={},fired={},shown={},player={},pshow={},hudoff={},theme={},seed=1}
+ local ok,e2=pcall(f) if not ok then return J{ok=false,kind="Erro durante a execução do arquivo",msg=tostring(e2)} end
+ local v=validate() if v then return J{ok=false,kind=v[1],msg=v[2],line=v[3]} end
+ finalize() return J{ok=true,proj=R.proj}
+end
+local CD={}
+local function startintro() local i=R.world.intro or (R.scene.inicio and "inicio") or (R.scene.start and "start") or (R.scene.intro and "intro") if i then startscene(i) end end
+function V_start(seed)
+ local ck=R.world.clock or {day=1,hour=8,minute=0}
+ S={t=(ck.hour or 0)*60+(ck.minute or 0),day0=ck.day or 1,wd0=WI[ck.weekday or "monday"] or 0,room=R.world.start,vars=copy(R.vars0),
+  chars={},inv={},done={},fired={},shown={},player={},pshow={},hudoff={},theme={},seed=math.floor(seed)}
+ Q,cur,waiting,EQ,errs={},nil,nil,{},{}
+ for _,id in ipairs(R.ord.char) do local c=R.char[id] S.chars[id]={room=c.initial_room,state=copy(c.state or {})} end
+ CD={}
+ if R.creation then S.creating=true return reply({}) end
+ startintro()
+ return reply()
+end
+function V_cset(id,val) CD[id]=val return J{ok=true} end
+local function split(s) local t={} for x in tostring(s):gmatch("[^,]+") do t[#t+1]=x end return t end
+function V_cfinish()
+ local c=R.creation if not c or not S.creating then return reply() end
+ local ferr,vals,shown={},{},{}
+ for _,f in ipairs(c.fields) do
+  local raw,v,sh=CD[f.id],nil,nil
+  local req=f.required~=false
+  local function fail(m) ferr[f.id]=m end
+  if f.type=="text" then
+   raw=tostring(raw or f.default or ""):match("^%s*(.-)%s*$")
+   if raw=="" then if req then fail("Preencha este campo.") end
+   else local n=utf8 and utf8.len(raw) or #raw
+    if n>(f.max or 40) then fail("Use no máximo "..(f.max or 40).." caracteres.")
+    elseif f.min and n<f.min then fail("Use pelo menos "..f.min.." caracteres.")
+    else v=raw sh=raw end end
+  elseif f.type=="number" then
+   local n=tonumber(raw) or tonumber(f.default) or f.min or 0
+   if f.min and n<f.min then n=f.min end
+   if f.max and n>f.max then n=f.max end
+   v=n sh=tostring(n)
+  else
+   local ids={} for _,o in ipairs(f.options) do ids[tostring(o.id)]=o end
+   local picked=split(raw or "")
+   local okp=true for _,p in ipairs(picked) do if not ids[p] then okp=false end end
+   if not okp then fail("Opção inválida.")
+   elseif f.type=="choice" then
+    if #picked==0 then if req then fail("Escolha uma opção.") end
+    else v=picked[1] sh=ids[v].text end
+   else
+    local mn,mx=f.min or (req and 1 or 0),f.max
+    if #picked<mn then fail("Escolha pelo menos "..mn..".")
+    elseif mx and #picked>mx then fail("Escolha no máximo "..mx..".")
+    else v=picked local tx={} for _,p in ipairs(picked) do tx[#tx+1]=ids[p].text end sh=table.concat(tx,", ") end
+   end
+  end
+  if not ferr[f.id] and v~=nil and f.validate then
+   local ok,m=pcall(f.validate,v)
+   if not ok then errs[#errs+1]=tostring(m) elseif type(m)=="string" then fail(m) end end
+  vals[f.id]=v shown[f.id]=sh
+ end
+ if next(ferr) then return J{ok=false,cerrs=ferr} end
+ for _,f in ipairs(c.fields) do local v=vals[f.id]
+  S.player[f.id]=v S.pshow[f.id]=shown[f.id]
+  if v~=nil and f.variable and type(v)~="table" then setv(f.variable,v) end
+  if v~=nil and (f.type=="choice" or f.type=="multi") then
+   local picks=type(v)=="table" and v or {v}
+   for _,p in ipairs(picks) do for _,o in ipairs(f.options) do if tostring(o.id)==p then
+    for k,x in pairs(o.set or {}) do setv(k,x) end
+    for k,x in pairs(o.add or {}) do setv(k,(S.vars[k] or 0)+x) end end end end end
+ end
+ S.creating=nil CD={}
+ if c.on_complete then cb(c.on_complete,copy(S.player)) end
+ startintro()
+ return reply()
+end
+function V_input(val) if waiting then
+ local spoken,spokenLine=nil,nil
+ if waiting.op=="CHOICE" then for _,opt in ipairs(waiting.options or {}) do
+  if tostring(opt.id)==tostring(val) then spoken=opt.say spokenLine=opt.line break end end end
+ waiting=nil
+ local out={}
+ if spoken~=nil then out[#out+1]={op="SAY",who="Você",text=spoken,player=true,line=spokenLine} end
+ for _,cmd in ipairs(pump(val~="" and val or nil)) do out[#out+1]=cmd end
+ return reply(out)
+ end return reply() end
+function V_exit(id) if idle() then local r=R.room[S.room] local x=find(r.exits,id)
+  if x and test(x.conditions,{room=S.room}) then
+   if x.on_use then cb(x.on_use,{room=S.room}) end advance(x.duration or 0,"move") pmove(x.to) if x.save then S.savereq=S.savereq or true end if x.scene then startscene(x.scene) end end end
+ return reply() end
+function V_act(id) if idle() then local r=R.room[S.room] local x=find(r.actions,id) local c={room=S.room,action=id}
+  if x and test(x.conditions,c) then advance(x.duration or 0,"action")
+   if x.execute then cb(x.execute,c) end if x.on_complete then cb(x.on_complete,c) end if x.save then S.savereq=S.savereq or true end
+   fire("action_completed",{action=id,room=S.room}) if x.scene then startscene(x.scene) end end end
+ return reply() end
+function V_use(id) if idle() then env.Inventory.use(id) end return reply() end
+function V_wait(n) if idle() then advance(n,"wait") end return reply() end
+function V_devinfo()
+ local rooms,chars,scenes,vars,hud={},{},{},{},{}
+ local scene_lines={}
+ for _,id in ipairs(R.ord.room) do local r=R.room[id] local ex,ac={},{}
+  for _,x in ipairs(r.exits or {}) do ex[#ex+1]={id=x.id or x.to,to=x.to,label=x.label or x.id or x.to,duration=x.duration or 0,scene=x.scene,line=x._line or r._line or 0} end
+  for _,x in ipairs(r.actions or {}) do ac[#ac+1]={id=x.id,label=x.label or x.id,duration=x.duration or 0,scene=x.scene,line=x._line or r._line or 0} end
+  local desc=type(r.description)=="string" and r.description or (id==S.room and (view().desc or "") or "")
+  rooms[#rooms+1]={id=id,title=r.title or id,description=desc,dynamic=type(r.description)=="function",line=r._line or 0,description_line=(type(r.description)=="function" and (debug.getinfo(r.description,"S").linedefined or r._line) or r._line) or 0,exits=ex,actions=ac}
+ end
+ for _,id in ipairs(R.ord.char) do local d=R.char[id] local c=S.chars[id]
+  chars[#chars+1]={id=id,name=d.name or id,initial_room=d.initial_room,room=c and c.room or d.initial_room,activity=c and c.state.activity or (d.state and d.state.activity) or "",line=d._line or 0}
+ end
+ for _,id in ipairs(R.ord.scene) do scenes[#scenes+1]=id scene_lines[id]=R.scene[id]._line or 0 end
+ local events,schedules,active_scenes={},{},{} for _,id in ipairs(R.ord.event) do events[#events+1]=id end for _,id in ipairs(R.ord.sched) do schedules[#schedules+1]=id end
+ -- Expõe a pilha real de cenas: a cena pausada no diálogo/choice e suas chamadas,
+ -- além das cenas que já foram enfileiradas para execução.
+ local function addSceneStack(stack,status,queue_index)
+  for depth,fr in ipairs(stack or {}) do
+   active_scenes[#active_scenes+1]={id=fr.id,status=status,depth=depth,current=(status=="executando" and depth==#stack),queue=queue_index}
+  end
+ end
+ if cur then addSceneStack(cur,"executando") end
+ for qi,stack in ipairs(Q) do addSceneStack(stack,"na fila",qi) end
+ for k,v in pairs(S.vars or {}) do vars[#vars+1]={id=k,value=v,default=R.vars0[k],line=R.varline or 0} end
+ for _,h in ipairs(R.hud or {}) do hud[#hud+1]={var=h.var,label=h.label or h.var,style=h.style or "text",max=h.max,min=h.min,color=h.color,prefix=h.prefix,suffix=h.suffix,decimals=h.decimals,icon=h.icon,on_label=h.on_label,off_label=h.off_label,show_value=h.show_value,warn=h.warn,line=R.hudline or 0} end
+ return J{project=R.proj,current=S.room,rooms=rooms,characters=chars,scenes=scenes,scene_lines=scene_lines,active_scenes=active_scenes,waiting=waiting and waiting.op or nil,events=events,schedules=schedules,variables=vars,hud=hud,world_start=R.world.start}
+end
+function V_devapply(str)
+ local f,e=load("return "..tostring(str or "{}"),"devpatch","t",{})
+ if not f then return J{ok=false,msg=tostring(e)} end
+ local ok,p=pcall(f) if not ok or type(p)~="table" then return J{ok=false,msg=tostring(p or "Patch inválido.")} end
+ local good,err=pcall(devApply,p) if not good then return J{ok=false,msg=tostring(err)} end
+ return J{ok=true}
+end
+function V_hotreload(src,name,patch)
+ local f,e=load(src,"="..tostring(name or "historia.vyr"),"t",env)
+ if not f then return J{ok=false,kind="Erro de sintaxe Lua",msg=tostring(e)} end
+ local oldR={} for k,v in pairs(R) do oldR[k]=v end
+ local liveS=S
+ -- Guarda somente as cenas-raiz que estavam ativas; elas serão reiniciadas
+ -- com as novas definições, sem repetir cenas-filhas separadamente.
+ local restartTasks,seenTasks={},{}
+ local function rememberActive(stack)
+  local root=stack and stack[1]
+  if not root then return end
+  if root.id then
+   local key="scene:"..root.id
+   if not seenTasks[key] then seenTasks[key]=true;restartTasks[#restartTasks+1]={kind="scene",id=root.id} end
+  elseif root.eventId and root.eventContext then
+   local key="event:"..root.eventId
+   if not seenTasks[key] then seenTasks[key]=true;restartTasks[#restartTasks+1]={kind="event",id=root.eventId,context=copy(root.eventContext)} end
+  end
+ end
+ rememberActive(cur)
+ for _,stack in ipairs(Q or {}) do rememberActive(stack) end
+ local runtime={Q=Q,cur=cur,waiting=waiting,EQ=EQ,errs=errs,busy=busy,adv=adv,pend=pend}
+ local function restoreOld()
+  for k in pairs(R) do R[k]=nil end
+  for k,v in pairs(oldR) do R[k]=v end
+  S=liveS Q,cur,waiting,EQ,errs=runtime.Q,runtime.cur,runtime.waiting,runtime.EQ,runtime.errs
+  busy,adv,pend=runtime.busy,runtime.adv,runtime.pend
+ end
+ -- O arquivo é executado sobre uma cópia temporária do estado. Nenhuma cena
+ -- pausada é retomada nem descartada durante a compilação das novas definições.
+ S=copy(liveS)
+ Q,cur,waiting,EQ,errs={},nil,nil,{},{}
+ busy,adv,pend=false,false,0
+ for k in pairs(R) do R[k]=nil end
+ local fresh={room={},scene={},char={},event={},item={},sched={},ending={},proj={},world={},vars0={},ord={room={},scene={},char={},event={},item={},sched={},ending={}}}
+ for k,v in pairs(fresh) do R[k]=v end
+ local ok,err=pcall(f)
+ if not ok then restoreOld() return J{ok=false,kind="Erro durante a execução do arquivo",msg=tostring(err)} end
+ local validation=validate()
+ if validation then restoreOld() return J{ok=false,kind=validation[1],msg=validation[2],line=validation[3]} end
+ local finalized,finalErr=pcall(finalize)
+ if not finalized then restoreOld() return J{ok=false,kind="Erro ao reconstruir eventos",msg=tostring(finalErr)} end
+ -- Mantém valores atuais; só inicializa variáveis/personagens que não existiam.
+ for k,v in pairs(R.vars0) do if S.vars[k]==nil then S.vars[k]=copy(v) end end
+ for _,id in ipairs(R.ord.char) do if not S.chars[id] then local c=R.char[id] S.chars[id]={room=c.initial_room,state=copy(c.state or {})} end end
+ local applied,patchErr=pcall(devApply,type(patch)=="table" and patch or {})
+ if not applied then restoreOld() return J{ok=false,kind="Falha ao aplicar alterações visuais",msg=tostring(patchErr)} end
+ if not R.room[S.room] then S.room=R.world.start or R.ord.room[1] end
+ if not S.room or not R.room[S.room] then restoreOld() return J{ok=false,msg="O projeto atualizado não possui um ambiente válido para continuar."} end
+ -- Descarta o console/corrotinas anteriores e reinicia as cenas que estavam
+ -- ativas desde o começo, agora usando as funções recém-carregadas.
+ Q,cur,waiting,EQ,errs={},nil,nil,{},{}
+ busy,adv,pend=false,false,0
+ for _,task in ipairs(restartTasks) do
+  if task.kind=="scene" then
+   if R.scene[task.id] then startscene(task.id) end
+  elseif task.kind=="event" then
+   local ev=R.event[task.id]
+   if ev and ev.execute then cb(ev.execute,task.context,ev.id) end
+  end
+ end
+ return reply()
+end
+function V_revalueText(id,expr)
+ local b=sayBindings[tostring(id)]
+ if not b then return J{ok=false,msg="Vínculo da mensagem não encontrado."} end
+ local scope={} for k,v in pairs(b.upvalues or {}) do scope[k]=v end
+ for k,v in pairs(b.locals or {}) do scope[k]=v end
+ setmetatable(scope,{__index=env})
+ local f,e=load("return ("..tostring(expr)..")","=vesper-live-text","t",scope)
+ if not f then return J{ok=false,msg=tostring(e)} end
+ local ok,value=pcall(f)
+ if not ok then return J{ok=false,msg=tostring(value)} end
+ return J{ok=true,text=interp(tostring(value)),line=b.line}
+end
+function V_devgoto(id)
+ if not R.room[id] then return J{ok=false,msg='Ambiente inexistente: '..tostring(id)} end
+ S.room=id Q,cur,waiting={},nil,nil
+ return reply({})
+end
+function V_devrefresh() return reply(waiting and {waiting} or {}) end
+function V_visit(id) S.visited=S.visited or {} S.visited[id]=true return J{ok=true} end
+function V_getvisited() return J(S.visited or {}) end
+function V_save() if not idle() then return J("") end return J(ser{pid=R.proj.id,ver=R.proj.version,S=S}) end
+function V_restore(str)
+ local f=load("return "..str,"save","t",{}) local ok,d=pcall(f)
+ if not ok or type(d)~="table" or type(d.S)~="table" or type(d.S.vars)~="table" or not R.room[d.S.room] then return J{ok=false,msg="Arquivo de save corrompido."} end
+ if d.pid~=R.proj.id or d.ver~=R.proj.version then return J{ok=false,msg="Save de outra história ou versão ("..tostring(d.pid).." "..tostring(d.ver)..")."} end
+ S=d.S S.player=S.player or {} S.pshow=S.pshow or {} S.hudoff=S.hudoff or {} S.theme=S.theme or {} S.visited=S.visited or {} S.savereq=nil
+ -- Compatibilidade com saves antigos: recupera o game over se o final já foi executado.
+ if not S.over then
+  local oldfinal=S.vars.final
+  if oldfinal and R.ending[oldfinal] then S.over=oldfinal
+  else
+   local deadline=((7-(S.day0 or 1))*1440)+23*60
+   if (S.vars.divida or 0)>0 and (S.t or 0)>=deadline then
+    S.vars.fim=true S.vars.final="cobradores" S.over="cobradores"
+   end
+  end
+ end
+ Q,cur,waiting,EQ,errs={},nil,nil,{},{} busy,adv,pend=false,false,0 return reply({})
+end
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/fengari-web@0.1.4/dist/fengari-web.js" onerror="var f=document.createElement('script');f.src='https://unpkg.com/fengari-web@0.1.4/dist/fengari-web.js';document.head.append(f)"></script>
+<script>
+const $=s=>document.querySelector(s), esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+/* ---------- armazenamento (IndexedDB) ---------- */
+const idb=new Promise((ok,no)=>{const q=indexedDB.open('vesper',1);q.onupgradeneeded=()=>q.result.createObjectStore('kv');q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)});
+const kv=(m,f)=>idb.then(d=>new Promise((ok,no)=>{const t=d.transaction('kv',m),r=f(t.objectStore('kv'));t.oncomplete=()=>ok(r&&r.result);t.onerror=()=>no(t.error||new Error('Falha no IndexedDB'));t.onabort=()=>no(t.error||new Error('Gravação cancelada pelo IndexedDB'))}));
+const kget=k=>kv('readonly',s=>s.get(k)), kset=(k,v)=>kv('readwrite',s=>s.put(v,k)), kkeys=()=>kv('readonly',s=>s.getAllKeys());
+/* ---------- ponte JS ↔ Lua (Fengari) ---------- */
+let lua,lauxlib,lualib,tl,tj,L,G=null,last=null;
+const fail=()=>{const m=tj(lua.lua_tostring(L,-1));lua.lua_pop(L,1);return new Error(m)};
+function boot(){if(typeof fengari==='undefined')throw new Error('Não foi possível carregar o Fengari (interpretador Lua). Verifique a conexão com a internet e recarregue a página.');({lua,lauxlib,lualib,to_luastring:tl,to_jsstring:tj}=fengari);L=lauxlib.luaL_newstate();lualib.luaL_openlibs(L);
+  if(lauxlib.luaL_loadbuffer(L,tl($('#lua').textContent),null,tl('=vesper'))||lua.lua_pcall(L,0,0,0))throw fail()}
+function call(fn,...a){lua.lua_getglobal(L,tl(fn));
+  for(const x of a)typeof x==='number'?lua.lua_pushinteger(L,Math.floor(x)):lua.lua_pushstring(L,tl(String(x)));
+  if(lua.lua_pcall(L,a.length,1,0))throw fail();const r=tj(lua.lua_tostring(L,-1));lua.lua_pop(L,1);return JSON.parse(r)}
+/* ---------- interface ---------- */
+const REDUCE=true, sleep=ms=>Promise.resolve();
+const kdel=k=>kv('readwrite',s=>s.delete(k));
+let tt; function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),2800)}
+/* luzes: ciclo do dia (padrão) < tema da história (Theme.set) < cor escolhida pelo jogador */
+const LT=[[0,'#2a0a5a','#4a0a6a','#b44cff','#ff2bd6'],[5.5,'#4a1a6a','#8a2a5a','#ff5fa2','#ffb347'],[8,'#0f4a6a','#6a4a1a','#5cf0c8','#ffd166'],[12,'#0a5a7a','#0a6a5a','#00e5ff','#b6ff3c'],[17,'#5a3208','#6a4a0a','#ffb000','#00e5ff'],[19,'#6a1a4a','#6a2a1a','#ff4d8d','#ff9a3c'],[21,'#2a0a5a','#4a0a6a','#b44cff','#ff2bd6'],[24,'#2a0a5a','#4a0a6a','#b44cff','#ff2bd6']];
+const hx=c=>[1,3,5].map(i=>parseInt(c.substr(i,2),16)), mix=(a,b,t)=>'#'+hx(a).map((v,i)=>Math.round(v+(hx(b)[i]-v)*t).toString(16).padStart(2,'0')).join('');
+const LIGHT={t:21,th:null};let PA=null;
+function lights(){/* Tema fixo do Vesper Developer. Theme.set continua armazenado na história, sem recolorir o editor. */}
+const show=id=>{['home','create','game'].forEach(x=>$('#'+x).hidden=x!==id)};
+function homeError(name,r){show('home');const m=(r.msg||'').match(/^(?:.*?):(\d+):\s*([\s\S]*)$/),line=r.line||(m&&m[1]),msg=m?m[2]:r.msg;
+  const b=$('#herr');b.hidden=false;b.textContent=`ERRO DE HISTÓRIA\n\nArquivo: ${name}\n${line?'Linha: '+line+'\n':''}Tipo: ${r.kind||'Erro'}\n\n${msg}`}
+
+let runTok=0,swapTok=0,skip=false,fastText=false,typing=false,curRoom=null,CR=null;
+const setTyping=b=>{typing=b;document.body.classList.toggle('typing',b)};
+
+/* ----- troca de ambiente: nome e descrição saem, os novos entram ----- */
+const KF_OUT=[{opacity:1,transform:'translateX(0)',filter:'blur(0)'},{opacity:0,transform:'translateX(-28px)',filter:'blur(6px)'}];
+const KF_IN=[{opacity:0,transform:'translateX(28px)',filter:'blur(6px)'},{opacity:1,transform:'translateX(0)',filter:'blur(0)'}];
+async function writeRoomText(el,text,tok){el.textContent=String(text??'');el.classList.remove('wr');return tok===runTok}
+
+async function stageOut(){$('#stage').hidden=true}
+async function stageIn(){const stage=$('#stage');stage.hidden=false;stage.style.opacity='';stage.style.transform='';stage.style.filter=''}
+
+async function firstRoomVisit(v,tok){
+  const rt=$('#rt'),ds=$('#desc'),ch=$('#chars'),panel=$('#room');
+  rt.dataset.devLine=String(v.roomline||'');ds.dataset.devLine=String(v.descline||v.roomline||'');
+  const chHtml=v.chars.map(c=>`<span data-dev-character="${esc(c.id||'')}" data-dev-line="${Number(c.line)||0}">${esc(c.name)}${c.act?' — '+esc(c.act):''}</span>`).join('');
+  await stageOut();
+  if(tok!==runTok)return false;
+  // Cada ambiente começa com o console vazio.
+  $('#log').innerHTML='';
+  $('#log').scrollTop=0;
+  panel.style.opacity='0';
+  rt.textContent='';ds.textContent='';ch.innerHTML='';ch.dataset.h='';
+  panel.style.opacity='';
+  await writeRoomText(rt,v.title,tok);
+  if(tok!==runTok)return false;
+  await writeRoomText(ds,v.desc,tok);
+  if(tok!==runTok)return false;
+  if(chHtml){ch.innerHTML=chHtml;ch.dataset.h=chHtml}
+  curRoom=v.rid;
+  return tok===runTok;
+}
+async function swapRoom(v){
+  const tk=++swapTok,rt=$('#rt'),ds=$('#desc'),ch=$('#chars'),first=curRoom===null;curRoom=v.rid;
+  rt.dataset.devLine=String(v.roomline||'');ds.dataset.devLine=String(v.descline||v.roomline||'');
+  const chHtml=v.chars.map(c=>`<span data-dev-character="${esc(c.id||'')}" data-dev-line="${Number(c.line)||0}">${esc(c.name)}${c.act?' — '+esc(c.act):''}</span>`).join('');
+  const jobs=[
+    {el:rt,diff:rt.textContent!==v.title,set:()=>{rt.textContent=v.title},d:0},
+    {el:ds,diff:ds.textContent!==v.desc,set:()=>{ds.textContent=v.desc},d:110},
+    {el:ch,diff:ch.dataset.h!==chHtml,set:()=>{ch.innerHTML=chHtml;ch.dataset.h=chHtml},d:200}].filter(j=>j.diff);
+  if(!jobs.length)return;
+  jobs.forEach(j=>j.el.getAnimations().forEach(a=>a.cancel()));
+  if(REDUCE){jobs.forEach(j=>j.set());return}
+  if(!first){
+    await Promise.all(jobs.map(j=>{j.a=j.el.animate(KF_OUT,{duration:320,delay:j.d*.5,easing:'ease-in',fill:'forwards'});return j.a.finished.catch(()=>{})}));
+    if(tk!==swapTok)return}
+  jobs.forEach(j=>{if(j.a)j.a.cancel();j.set();j.el.animate(KF_IN,{duration:480,delay:j.d,easing:'cubic-bezier(.2,.7,.2,1)',fill:'backwards'})})}
+
+/* ----- variáveis visíveis (HUD) ----- */
+const fmtN=(n,h)=>(h.prefix||'')+(typeof n==='number'?n.toLocaleString('pt-BR',h.decimals!=null?{minimumFractionDigits:h.decimals,maximumFractionDigits:h.decimals}:{maximumFractionDigits:2}):String(n??'—'))+(h.suffix||'');
+function hudHtml(h){const body=h.style==='bar'?'<div class="hb bar" role="progressbar"><i></i></div>':h.style==='pips'?'<div class="hb pips" role="img"></div>':'';
+  return `<div class="hv s-${esc(h.style)}"><div class="hh"><span class="hl"></span><span class="hn"></span></div>${body}</div>`}
+function tween(el,to,h){el._v=to;el.textContent=fmtN(to,h)}
+
+async function mobileHudCopy(el,h,from,to){
+  if(innerWidth>760||REDUCE||from===undefined||from===to)return;
+  const header=$('#game header'),rect=header.getBoundingClientRect();
+  const card=document.createElement('div');card.className='hud-float';
+  card.style.top=Math.max(0,rect.bottom-1)+'px';
+  const clone=el.cloneNode(true);clone.classList.remove('up','dn','warn');card.append(clone);document.body.append(card);
+  const hn=clone.querySelector('.hn'),bar=clone.querySelector('.bar i'),pips=clone.querySelector('.pips');
+  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+  await new Promise(resolve=>requestAnimationFrame(()=>{card.style.transition='transform .38s cubic-bezier(.2,.7,.2,1),opacity .25s';card.style.opacity='1';card.style.transform='translateY(0)';setTimeout(resolve,390)}));
+  if(h.style==='bar'){
+    const mn=h.min??0,mx=h.max??100,pct=n=>mx>mn?Math.max(0,Math.min(1,(Number(n)-mn)/(mx-mn))):0;
+    if(bar){bar.style.transition='width .8s cubic-bezier(.2,.7,.2,1)';bar.style.width=(pct(to)*100)+'%'}
+    if(hn){const t0=performance.now(),D=800;await new Promise(resolve=>{const step=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);hn.textContent=h.show_value===false?'':`${fmtN(Number(from)+(Number(to)-Number(from))*e,{})} / ${fmtN(mx,{})}`;if(k<1)requestAnimationFrame(step);else resolve()};requestAnimationFrame(step)})}
+  }else if(h.style==='number'&&hn){
+    const t0=performance.now(),D=800;await new Promise(resolve=>{const step=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);hn.textContent=fmtN(Number(from)+(Number(to)-Number(from))*e,h);if(k<1)requestAnimationFrame(step);else resolve()};requestAnimationFrame(step)});
+  }else if(h.style==='pips'&&pips){
+    const mx=Math.max(1,Math.min(20,Math.round(h.max||5))),a=Math.round(Number(from)||0),b=Math.round(Number(to)||0);
+    pips.innerHTML=Array.from({length:mx},(_,k)=>`<span class="${k<a?'on':''}">${esc(h.icon||'♥')}</span>`).join('');
+    [...pips.children].forEach((sp,i)=>{sp.style.transition='color .55s';sp.classList.toggle('on',i<b)});await wait(650);
+  }else if(hn){
+    hn.textContent=fmtN(from,h);
+    if(typeof from==='number'&&typeof to==='number'){const t0=performance.now(),D=800;await new Promise(resolve=>{const step=t=>{const k=Math.min(1,(t-t0)/D),e=1-Math.pow(1-k,3);hn.textContent=fmtN(from+(to-from)*e,h);if(k<1)requestAnimationFrame(step);else resolve()};requestAnimationFrame(step)})}else hn.textContent=fmtN(to,h);
+  }
+  await wait(180);
+  card.style.transform='translateY(-115%)';card.style.opacity='0';await wait(390);card.remove();
+}
+async function renderHud(list){
+  const box=$('#hud');box.hidden=!list.length;$('#hudFold').hidden=!list.length;
+  if(!list.length){box.dataset.sig='';return}
+  const sig=list.map(h=>h.key+'|'+h.style).join(',');
+  if(box.dataset.sig!==sig){box.dataset.sig=sig;box.innerHTML='<p class="lbl">Status</p>'+list.map(hudHtml).join('')}
+  const els=box.querySelectorAll('.hv');
+  for(let i=0;i<list.length;i++){const h=list[i],el=els[i],hn=el.querySelector('.hn'),hb=el.querySelector('.hb'),v=h.value;
+    el.querySelector('.hl').textContent=h.label;h.color?el.style.setProperty('--c',h.color):el.style.removeProperty('--c');
+    el.dataset.devVar=h.key;el.dataset.devLine=String(h.line||0);const prev=el._p;el._p=v;
+    el.classList.remove('up','dn');
+    if(h.style==='bar'){const mn=h.min??0,mx=h.max??100,n=Number(v)||0,pct=mx>mn?Math.max(0,Math.min(1,(n-mn)/(mx-mn))):0;
+      hb.firstChild.style.transition=prev!==undefined&&prev!==v?'width .75s cubic-bezier(.2,.7,.2,1)':'none';hb.firstChild.style.width=pct*100+'%';el.classList.toggle('warn',h.warn!=null&&pct<=h.warn);
+      hb.setAttribute('aria-label',h.label);hb.setAttribute('aria-valuemin',mn);hb.setAttribute('aria-valuemax',mx);hb.setAttribute('aria-valuenow',n);
+      hn.textContent=h.show_value===false?'':`${fmtN(n,{})} / ${fmtN(mx,{})}`}
+    else if(h.style==='number'){tween(hn,typeof v==='number'?v:v==null?null:String(v),h)}
+    else if(h.style==='pips'){const mx=Math.max(1,Math.min(20,Math.round(h.max||5))),n=Math.round(Number(v)||0);
+      hb.innerHTML=Array.from({length:mx},(_,k)=>`<span class="${k<n?'on':''}">${esc(h.icon||'♥')}</span>`).join('');
+      hb.setAttribute('aria-label',`${h.label}: ${Math.max(0,n)} de ${mx}`);hn.textContent=''}
+    else if(h.style==='flag'){hn.textContent=v?(h.on||'Sim'):(h.off||'Não');el.classList.toggle('on',!!v)}
+    else hn.textContent=v==null?'—':String(v)}
+}
+/* ----- console: texto escrito aos poucos ----- */
+async function typeLine(p,text,tok,box,style={}){
+  p.textContent=String(text??'');p.classList.remove('wr');
+  if(style.color)p.style.color='';
+  if(box)box.scrollTop=box.scrollHeight;
+}
+
+function syncStage(){const stage=$('#stage');stage.hidden=!($('#log').childElementCount||$('#ctl').querySelector('button'))}
+function addErr(t){const d=document.createElement('p');d.className='ln e';d.textContent='⚠ '+t;$('#log').append(d);syncStage()}
+async function typeAll(res,tok){
+  const log=$('#log');
+  for(const o of res.out){
+    if(tok!==runTok)return false;
+    if(o.op==='CLEAR'){log.innerHTML='';continue}
+    if(o.op==='ERR'){addErr(o.text);continue}
+    if(o.op!=='SAY')continue;
+    $('#stage').hidden=false;
+    const p=document.createElement('p');p.className='ln'+(o.player?' player':o.who?'':' n');p.dataset.devSay='1';p.dataset.devLine=String(o.line||'');p.dataset.devScene=o.scene||'';
+    if(o.bind){p.dataset.devBind=o.bind;p.dataset.devKind=o.kind||'Narrator.say'}
+    if(o.who)p.innerHTML=`<b>${esc(o.who)}</b>`;
+    log.append(p);log.scrollTop=log.scrollHeight;
+    await typeLine(p,o.text,tok,log,o)}
+  res.errs.forEach(addErr);
+  return tok===runTok}
+
+/* ----- tela de game over ----- */
+const hideOver=()=>{$('#over').hidden=true;$('#game').inert=false};
+async function showOver(o,tok){
+  const k=['bad','good','neutral'].includes(o.kind)?o.kind:'bad',el=$('#over');
+  el.className='k-'+k;$('#otag').textContent=k==='bad'?'GAME OVER':'FIM';
+  $('#otitle').textContent=o.title;$('#otext').textContent='';$('#ocount').textContent='';$('#oacts').hidden=true;
+  el.hidden=false;$('#game').inert=true;
+  let got=new Set(),isNew=false;
+  if(G){try{got=new Set((await kget('ends:'+G.id))||[]);isNew=!got.has(o.id);got.add(o.id);await kset('ends:'+G.id,[...got]) }catch(e){}}
+  setTyping(false);skip=true;
+  $('#otext').textContent=o.text;if(tok!==runTok)return;
+  setTyping(false);
+  if(o.total>1)$('#ocount').textContent=`Finais descobertos: ${got.size} de ${o.total}${isNew?' · novo!':''}`;
+  $('#oload').hidden=!hasSave;$('#oacts').hidden=false;$('#oretry').focus()}
+
+/* ----- renderização principal ----- */
+const renderInv=(inv,off)=>{$('#inv').innerHTML='<p class="lbl">Inventário</p>'+(inv.length?inv.map(i=>`<div class="i"><b>${esc(i.title)}${i.n>1?' ×'+i.n:''}</b><p>${esc(i.desc)}</p>${i.use?`<button data-use="${esc(i.id)}" ${off?'disabled':''}>Usar</button>`:''}</div>`).join(''):'<p style="color:var(--mut);font-size:15px;margin:0">Vazio.</p>')};
+function controls(res){
+  const v=res.view,ctl=$('#ctl'),acts=$('#acts'),w=res.out[res.out.length-1];ctl.innerHTML='';
+  if(res.waiting&&w&&w.op==='WAIT')ctl.innerHTML='<button class="p" data-in="">Continuar</button>';
+  if(res.waiting&&w&&w.op==='CHOICE')ctl.innerHTML=w.options.map(o=>`<button data-in="${esc(o.id)}">${esc(o.text)}</button>`).join('');
+  const bt=(arr,k)=>arr.map(x=>`<button data-${k}="${esc(x.id)}" data-dev-type="${k==='exit'?'exit':'action'}" data-dev-id="${esc(x.id)}" data-dev-line="${Number(x.line)||0}">${esc(x.label)}${x.dur?`<small>${x.dur>=60?(x.dur/60).toFixed(x.dur%60?1:0)+' h':x.dur+' min'}</small>`:''}</button>`).join('');
+  acts.innerHTML=(v.exits.length?`<div><p class="lbl">Seguir para</p><div class="bs">${bt(v.exits,'exit')}</div></div>`:'')
+   +(v.acts.length?`<div><p class="lbl">Fazer</p><div class="bs">${bt(v.acts,'act')}</div></div>`:'')
+   +`<div><p class="lbl">Deixar o tempo passar</p><div class="bs"><button data-wait="15">15 min</button><button data-wait="60">1 hora</button><button data-wait="240">4 horas</button></div></div>`;
+  acts.hidden=res.waiting||!!res.over;
+  renderInv(v.inv,res.waiting||!!res.over);syncStage()}
+async function render(res){
+  last=res;const tok=++runTok,v=res.view;skip=true;fastText=true;setTyping(true);
+  $('#rt').dataset.devLine=String(v.roomline||'');$('#desc').dataset.devLine=String(v.descline||v.roomline||'');
+  if(res.over){
+    $('#ctl').innerHTML='';$('#acts').hidden=true;
+    return showOver(res.over,tok);
+  }
+  hideOver();
+  $('#ctl').innerHTML=res.out.some(o=>o.op==='SAY')?'<span class="skip">Clique para acelerar o texto</span>':'';$('#acts').hidden=true;
+  $('#wd').textContent=`${v.wd}, dia ${v.day}`;$('#hm').textContent=String(v.h).padStart(2,'0')+':'+String(v.m).padStart(2,'0');LIGHT.t=v.h+v.m/60;LIGHT.th=Array.isArray(v.theme)?null:v.theme;lights();
+  renderInv(v.inv,true);
+  let seen={};
+  try{seen=call('V_getvisited')||{}}catch(e){}
+  if(tok!==runTok)return;
+  const firstVisit=!seen[v.rid];
+  const roomChanged=curRoom!==v.rid;
+  if(firstVisit){
+    call('V_visit',v.rid);
+    if(!await firstRoomVisit(v,tok))return;
+  }else{
+    // Limpa somente ao entrar em outro ambiente; ações na mesma sala preservam o log.
+    if(roomChanged){$('#log').innerHTML='';$('#log').scrollTop=0}
+    await swapRoom(v);
+  }
+  if(tok!==runTok)return;
+  // Mostra o console antes de pintar mensagens/esperas; oculta só quando estiver realmente vazio.
+  const needsStage=$('#log').childElementCount>0||res.waiting||res.out.some(o=>o.op==='SAY'||o.op==='ERR');
+  if(needsStage)await stageIn(firstVisit);else $('#stage').hidden=true;
+  if(tok!==runTok)return;
+  if(res.save&&G)await checkpoint(res);
+  if(!await typeAll(res,tok))return;
+  fastText=false;setTyping(false);if(res.saved)toast('◈ Ponto de salvamento gravado');
+  controls(res);await renderHud(v.hud)}
+const play=res=>render(res).catch(e=>{console.error(e);setTyping(false);toast('Erro: '+e.message)});
+let actionBusy=false;
+const act=(fn,...a)=>{
+  if(actionBusy)return;
+  actionBusy=true;
+  try{Promise.resolve(play(call(fn,...a))).finally(()=>{actionBusy=false})}
+  catch(e){actionBusy=false;setTyping(false);toast('Erro: '+e.message)}
+};
+
+/* ----- tela de criação ----- */
+function fieldHtml(f,i){
+  const id='f'+i,lab=esc(f.label||f.id),hint=f.hint?`<small class="hint">${esc(f.hint)}</small>`:'';let body;
+  if(f.type==='text')body=`<label for="${id}">${lab}</label>${hint}<input id="${id}" type="text" maxlength="${Number(f.max)||40}" placeholder="${esc(f.placeholder||'')}" value="${esc(f.default||'')}" autocomplete="off" spellcheck="false">`;
+  else if(f.type==='number'){const mn=Number(f.min??0),mx=Number(f.max??100),df=Number(f.default??mn),st=Number(f.step||1);
+    body=`<label for="${id}">${lab}</label>${hint}<div class="rng"><input id="${id}" type="range" min="${mn}" max="${mx}" step="${st}" value="${df}"><output for="${id}">${df}</output></div>`}
+  else{const multi=f.type==='multi',def=[].concat(f.default??[]).map(String);
+    body=`<fieldset><legend>${lab}</legend>${hint}<div class="opts">`+f.options.map(o=>`<label class="opt"><input type="${multi?'checkbox':'radio'}" name="${id}" value="${esc(o.id)}" ${def.includes(String(o.id))?'checked':''}><span><b>${esc(o.text)}</b>${o.description?`<small>${esc(o.description)}</small>`:''}</span></label>`).join('')+'</div></fieldset>'}
+  return `<div class="fld" data-i="${i}" data-max="${f.type==='multi'?Number(f.max)||0:0}">${body}<p class="ferr" role="alert" hidden></p></div>`}
+function showCreate(res){
+  const c=CR=res.creation;show('create');
+  $('#ctitle').textContent=c.title||'Criação de personagem';$('#cdesc').textContent=c.description||'';$('#cgo').textContent=c.button||'Começar';
+  $('#cfields').innerHTML=c.fields.map(fieldHtml).join('');window.scrollTo(0,0);
+  const t=$('#cfields input[type=text]');if(t)t.focus({preventScroll:true})}
+function collect(){return CR.fields.map((f,i)=>{const w=$(`#cfields [data-i="${i}"]`);let v;
+  if(f.type==='choice')v=w.querySelector('input:checked')?.value??'';
+  else if(f.type==='multi')v=[...w.querySelectorAll('input:checked')].map(x=>x.value).join(',');
+  else v=w.querySelector('input').value;return [f.id,v]})}
+$('#cfields').addEventListener('input',e=>{if(e.target.type==='range')e.target.nextElementSibling.textContent=e.target.value});
+$('#cfields').addEventListener('change',e=>{const w=e.target.closest('.fld'),mx=+w.dataset.max;
+  if(e.target.type==='checkbox'&&mx&&w.querySelectorAll('input:checked').length>mx){e.target.checked=false;toast(`Escolha no máximo ${mx}.`)}});
+$('#cfields').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.type==='text'){e.preventDefault();$('#cgo').click()}});
+$('#cgo').onclick=()=>{try{
+  collect().forEach(([id,v])=>call('V_cset',id,v));
+  const r=call('V_cfinish');
+  document.querySelectorAll('#cfields .ferr').forEach(p=>p.hidden=true);
+  if(r.ok===false){let first=null;
+    CR.fields.forEach((f,i)=>{const m=r.cerrs[f.id];if(!m)return;const w=$(`#cfields [data-i="${i}"]`),p=w.querySelector('.ferr');p.textContent=m;p.hidden=false;first=first||w});
+    if(first){first.scrollIntoView({block:'center',behavior:REDUCE?'auto':'smooth'});first.querySelector('input')?.focus({preventScroll:true})}return}
+  CR=null;show('game');play(r)}catch(e){toast('Erro: '+e.message)}};
+$('#cback').onclick=()=>{show('home');G=null;CR=null;lib()};
+const begin=res=>res.creation?showCreate(res):(show('game'),play(res));
+
+/* ---------- carregar histórias ---------- */
+async function open(src,name,mode){
+  try{boot();const r=call('V_load',src,name);if(!r.ok)return homeError(name,r);
+    G={...r.proj,name,src};$('#herr').hidden=true;await kset('story:'+G.id,{title:G.title,name,src});await lib();
+    $('#gt').textContent=G.title;$('#log').innerHTML='';$('#stage').hidden=true;
+    runTok++;swapTok++;setTyping(false);hideOver();curRoom=null;CR=null;last=null;
+    for(const id of ['rt','desc','chars'])$('#'+id).textContent='';$('#chars').dataset.h='';$('#hud').dataset.sig='';
+    const sv=await kget(SK());hasSave=!!sv;refreshLoad();let pick='new';
+    if(sv&&mode==='continue')pick='load';else if(sv&&mode==='ask'){pick=await askSave(sv,'start');if(pick==='cancel'){G=null;return}}
+    if(pick==='load'){const x=call('V_restore',sv.data);if(x.ok===false){toast(x.msg);return begin(call('V_start',Date.now()%2147483647))}show('game');play(x)}
+    else begin(call('V_start',Date.now()%2147483647));if(innerWidth<=760)toast('Dica: arraste o horário para a esquerda para abrir o painel de variáveis.')}
+  catch(e){homeError(name,{kind:'Falha na inicialização',msg:e.message})}}
+async function readFile(f){if(!f)return;if(!/\.vyr$/i.test(f.name))return homeError(f.name,{kind:'Extensão inválida',msg:'Escolha um arquivo com extensão .vyr.'});open(await f.text(),f.name,'ask')}
+$('#pick').onclick=()=>$('#file').click();$('#file').onchange=e=>readFile(e.target.files[0]);
+['dragover','dragenter'].forEach(t=>addEventListener(t,e=>{e.preventDefault();$('#drop').classList.add('over')}));
+['dragleave','drop'].forEach(t=>addEventListener(t,e=>{e.preventDefault();$('#drop').classList.remove('over')}));
+addEventListener('drop',e=>readFile(e.dataTransfer.files[0]));
+async function lib(){const ks=(await kkeys()).filter(k=>k.startsWith('story:'));const b=$('#lib');b.hidden=!ks.length;b.querySelectorAll('.it').forEach(x=>x.remove());
+  for(const k of ks){const s=await kget(k),has=await kget('save:'+k.slice(6)),d=document.createElement('div');d.className='it';
+    d.innerHTML=`<span>${esc(s.title)}${has?`<br><small>${esc(has.label)}</small>`:''}</span><span class="row">${has?'<button class="p">Continuar</button>':''}<button>Nova partida</button></span>`;
+    const bs=d.querySelectorAll('button');if(has)bs[0].onclick=()=>open(s.src,s.name,'continue');bs[bs.length-1].onclick=()=>open(s.src,s.name,'new');b.append(d)}}
+const leave=()=>{runTok++;swapTok++;setTyping(false);hideOver();show('home');G=null;if($('#devbar'))$('#devbar').hidden=true;if($('#devpanel'))$('#devpanel').hidden=true;document.body.classList.remove('dev-editing');lib()};
+$('#bexit').onclick=leave;$('#omenu').onclick=leave;
+/* painel lateral retrátil em telas touch */
+const panelOpen=()=>{document.body.classList.add('panel-open');$('#side').setAttribute('aria-hidden','false')};
+const panelClose=()=>{document.body.classList.remove('panel-open');$('#side').setAttribute('aria-hidden',innerWidth<=760?'true':'false')};
+$('#bpanelclose').onclick=panelClose;$('#panelShade').onclick=panelClose;
+let clockTouch=null;
+$('#clk').addEventListener('pointerdown',e=>{if(innerWidth<=760)clockTouch={x:e.clientX,y:e.clientY}});
+$('#clk').addEventListener('pointerup',e=>{if(innerWidth>760||!clockTouch)return;const dx=e.clientX-clockTouch.x,dy=e.clientY-clockTouch.y;clockTouch=null;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)){if(dx<0)panelOpen();else panelClose()}});
+$('#clk').addEventListener('pointercancel',()=>clockTouch=null);
+
+$('#mbsave').onclick=()=>{if(hasSave){panelClose();$('#bsave').click()}};
+$('#mbexit').onclick=leave;
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('panel-open')){panelClose();$('#clk').focus?.({preventScroll:true})}});
+const adaptFolds=()=>{if(innerWidth>760){$('#hudFold').open=true;$('#invFold').open=true}};
+addEventListener('resize',()=>{if(innerWidth>760){panelClose();adaptFolds()}},{passive:true});adaptFolds();panelClose();
+$('#oretry').onclick=()=>{const g=G;if(g)open(g.src,g.name,'new')};
+$('#oload').onclick=()=>loadSave(false);
+/* ---------- ações do jogo ---------- */
+const GAMEBTN=d=>'in' in d||d.exit||d.act||d.use||d.wait;
+document.addEventListener('click',e=>{const b=e.target.closest('button');
+  if(typing&&!b){fastText=true;return}
+  if(!b)return;const d=b.dataset;if(typing&&GAMEBTN(d))return;
+  if('in' in d)act('V_input',d.in);else if(d.exit)act('V_exit',d.exit);else if(d.act)act('V_act',d.act);else if(d.use)act('V_use',d.use);else if(d.wait)act('V_wait',+d.wait)});
+document.addEventListener('keydown',e=>{if(typing&&(e.key==='Enter'||e.key===' ')&&!e.target.closest('input,textarea,button')){fastText=true;e.preventDefault()}});
+/* ---------- salvamento por pontos (o autor decide onde, com Game.save) ---------- */
+const SK=()=>'save:'+G.id;let hasSave=false;
+function refreshLoad(){const b=$('#bsave');b.disabled=!hasSave;b.title=hasSave?'Carregar o último ponto de salvamento':'Nenhum ponto de salvamento ainda';const mb=$('#mbsave');if(mb)mb.disabled=!hasSave}
+async function checkpoint(res){const v=res.view,hm=String(v.h).padStart(2,'0')+':'+String(v.m).padStart(2,'0');
+  const label=(res.save.label?res.save.label+' · ':'')+`${v.title} · ${v.wd}, dia ${v.day} ${hm}`;
+  try{const data=call('V_save')||res.save.data;if(!data)throw new Error('O estado do jogo retornou vazio.');await kset(SK(),{when:Date.now(),label,ver:G.version,data});hasSave=true;res.saved=true;refreshLoad()}catch(e){console.error('Falha ao gravar ponto de salvamento:',e);toast('Falha ao salvar: '+(e?.message||'erro desconhecido'))}}
+function askSave(sv,ctx){return new Promise(ok=>{const d=$('#ask'),okv=sv.ver===G.version,st=ctx==='start';
+  $('#askt').textContent=st?'Jogo salvo encontrado':'Carregar jogo salvo?';$('#askl').textContent=sv.label;$('#askd').textContent=new Date(sv.when).toLocaleString('pt-BR');
+  $('#askn').textContent=okv?(st?'Continuar de onde parou ou começar um jogo novo? O salvamento só é substituído no próximo ponto de salvamento.':'O progresso desde o último ponto de salvamento será perdido.'):`Este salvamento é da versão ${sv.ver} e a história está na ${G.version}; não dá para carregá-lo.`;
+  const L=$('#askload');L.disabled=!okv;$('#asknew').hidden=!st;let r='cancel';const end=v=>{r=v;d.close()};
+  L.onclick=()=>end('load');$('#asknew').onclick=()=>end('new');$('#askx').onclick=()=>end('cancel');d.onclose=()=>ok(r);d.showModal()})}
+async function loadSave(ask){if(!G)return;const sv=await kget(SK());if(!sv)return toast('Nenhum ponto de salvamento.');
+  if(ask&&await askSave(sv,'load')!=='load')return;
+  try{const x=call('V_restore',sv.data);if(x.ok===false)return toast(x.msg);$('#log').innerHTML='';$('#stage').hidden=true;play(x);toast('Jogo carregado.')}catch(e){toast('Erro: '+e.message)}}
+$('#bsave').onclick=()=>loadSave(true);
+lib();
+
+/* ================= VESPER DEVELOPER WORKSPACE ================= */
+let DEV={enabled:true,edit:false,tab:'room',info:null,patch:{rooms:{},characters:{},variables:{},hud:null,project:{},world:{}},source:'',selected:null};
+const devClone=o=>JSON.parse(JSON.stringify(o));
+function luaString(value){
+ return '"'+String(value).replace(/[\\"\x00-\x1f\x7f]/g,ch=>{
+  if(ch==='\\')return '\\\\';
+  if(ch==='"')return '\\"';
+  if(ch==='\n')return '\\n';
+  if(ch==='\r')return '\\r';
+  if(ch==='\t')return '\\t';
+  return '\\'+ch.charCodeAt(0).toString().padStart(3,'0');
+ })+'"';
+}
+function luaValue(v){
+ if(v===null||v===undefined)return 'nil';
+ if(typeof v==='boolean')return v?'true':'false';
+ if(typeof v==='number')return Number.isFinite(v)?String(v):'0';
+ if(typeof v==='string')return luaString(v);
+ if(Array.isArray(v))return '{'+v.map(luaValue).join(',')+'}';
+ if(typeof v==='object')return '{'+Object.entries(v).filter(([,x])=>x!==undefined).map(([k,x])=>'['+luaString(k)+']='+luaValue(x)).join(',')+'}';
+ return 'nil';
+}
+function devSource(src=G?.src||'',patch=DEV.patch){
+ const marker='--[[ VESPER_DEVELOPER_PATCH_BEGIN ]]';
+ return String(src).trimEnd()+'\n\n'+marker+'\nif Dev and Dev.apply then Dev.apply('+luaValue(patch)+') end\n--[[ VESPER_DEVELOPER_PATCH_END ]]\n';
+}
+function devPatchRoom(id,delta){const old=DEV.patch.rooms[id]||{};DEV.patch.rooms[id]={...old,...delta};}
+function devPatchCharacter(id,delta){const old=DEV.patch.characters[id]||{};DEV.patch.characters[id]={...old,...delta};}
+function devPatchVariable(id,value){DEV.patch.variables[id]=value;}
+function devPatchHud(list){DEV.patch.hud=list.map(x=>({...x}));}
+function devSaveDownload(){
+ if(!G)return toast('Nenhum projeto aberto.');
+ const src=devSource(G.src,DEV.patch),blob=new Blob([src],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download=(G.name||G.id||'historia').replace(/\.(vyr|lua|txt)$/i,'')+'_editado.vyr';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);toast('Arquivo .vyr exportado.');
+}
+function devUpdateInfo(){try{DEV.info=call('V_devinfo')}catch(e){toast('Não foi possível ler o projeto: '+e.message)}}
+function devApplyLive(patch){
+ const r=call('V_devapply',luaValue(patch));if(!r.ok)throw new Error(r.msg||'Falha ao aplicar alteração.');
+ // Atualiza apenas a interface. Não chama play()/render(), pois isso reinicia
+ // a apresentação, invalida animações pendentes e pode deixar a cena bloqueada.
+ const fresh=call('V_devrefresh'),v=fresh.view;
+ last=fresh;
+ $('#rt').textContent=v.title;$('#rt').dataset.devLine=String(v.roomline||'');
+ $('#desc').textContent=v.desc;$('#desc').dataset.devLine=String(v.descline||v.roomline||'');
+ const chHtml=v.chars.map(c=>`<span data-dev-character="${esc(c.id||'')}" data-dev-line="${Number(c.line)||0}">${esc(c.name)}${c.act?' — '+esc(c.act):''}</span>`).join('');
+ $('#chars').innerHTML=chHtml;$('#chars').dataset.h=chHtml;
+ $('#wd').textContent=`${v.wd}, dia ${v.day}`;
+ $('#hm').textContent=String(v.h).padStart(2,'0')+':'+String(v.m).padStart(2,'0');
+ LIGHT.t=v.h+v.m/60;LIGHT.th=Array.isArray(v.theme)?null:v.theme;lights();
+ // Recria somente os controles; a escolha pendente da cena continua válida.
+ controls(fresh);
+ renderHud(v.hud).catch(e=>console.error('Falha ao atualizar HUD:',e));
+ curRoom=v.rid;
+ devUpdateInfo();
+ // Depois de aplicar, volta ao modo de jogo: no modo Editar os cliques
+ // nas ações são interceptados para seleção de objetos, não para execução.
+ devSetMode(false);
+}
+function devOpenPanel(tab=DEV.tab){DEV.tab=tab;$('#devpanel').hidden=false;renderDevPanel()}
+function devClosePanel(){$('#devpanel').hidden=true}
+function devSetMode(edit){DEV.edit=!!edit;document.body.classList.toggle('dev-editing',DEV.edit);$('#devEdit').classList.toggle('dev-active',DEV.edit);$('#devPlay').classList.toggle('dev-active',!DEV.edit);if(!edit)devClosePanel();}
+function devField(label,value,id,type='text',extra=''){
+ return `<div class="dev-field"><label for="${id}">${esc(label)}</label>${type==='textarea'?`<textarea id="${id}" ${extra}>${esc(value??'')}</textarea>`:`<input id="${id}" type="${type}" value="${esc(value??'')}" ${extra}>`}</div>`;
+}
+function devSelect(label,value,id,opts){return `<div class="dev-field"><label for="${id}">${esc(label)}</label><select id="${id}">${opts.map(o=>`<option value="${esc(o.value)}" ${String(o.value)===String(value)?'selected':''}>${esc(o.label)}</option>`).join('')}</select></div>`}
+function devSection(title,body){return `<section class="dev-section"><h3>${esc(title)}</h3>${body}</section>`}
+function devCurrentRoom(){return DEV.info?.rooms?.find(r=>r.id===DEV.info.current)}
+function devSetTitle(t){$('#devPanelTitle').textContent=t}
+function renderDevPanel(){
+ if(!G)return;devUpdateInfo();const root=$('#devInspector'),info=DEV.info||{},room=devCurrentRoom();
+ document.querySelectorAll('[data-dev-tab]').forEach(b=>b.classList.toggle('selected',b.dataset.devTab===DEV.tab));
+ const titles={room:'Ambiente',scenes:'Cenas em execução',objects:'Ações e saídas',characters:'Personagens',variables:'Variáveis',hud:'HUD',code:'Código .vyr'};devSetTitle(titles[DEV.tab]||'Inspector');
+ if(DEV.tab==='room'){
+  const rooms=info.rooms||[];
+  const active=(info.active_scenes||[]);
+  const activeMarkup=active.length?active.map((x,i)=>`<div class="dev-item"><div class="dev-item-main"><strong>${esc(x.id)} ${x.current?'· ATUAL':''}</strong><small>${esc(x.status)} · nível ${x.depth}</small></div><button data-dev-scene-code="${esc(x.id)}">Editar</button></div>`).join(''):'<p class="dev-note">Nenhuma cena está pausada ou em execução neste instante. As cenas chamadas por diálogos e ações aparecem aqui enquanto estão ativas.</p>';
+  root.innerHTML=devSection('Execução atual',activeMarkup+`<div class="dev-actions"><button id="devAllScenes">Ver todas as cenas</button></div>`)+(room?devSection('Ambiente atual',devSelect('Inspecionar ambiente',room.id,'devRoomSelect',rooms.map(r=>({value:r.id,label:r.title+' · '+r.id})))+devField('Identificador',room.id,'devRoomId','text','readonly')+devField('Nome exibido',room.title,'devRoomTitle')+devField('Descrição',room.description,'devRoomDesc','textarea')+(room.dynamic?'<div class="dev-field"><label><input id="devOverrideDesc" type="checkbox"> Substituir a descrição dinâmica por este texto</label></div>':'')+`<div class="dev-actions"><button id="devApplyRoom" class="dev-primary">Aplicar alterações</button></div>`+(room.dynamic?'<p class="dev-note">Sem marcar a opção, a função Lua original da descrição será preservada.</p>':'')):'<p class="dev-note">Nenhum ambiente encontrado.</p>')+devSection('Configuração do mundo',devSelect('Ambiente inicial',info.world_start,'devWorldStart',rooms.map(r=>({value:r.id,label:r.title+' · '+r.id})))+`<div class="dev-actions"><button id="devApplyWorld">Definir início do jogo</button><button id="devAddRoom">+ Novo ambiente</button></div>`)+devSection('Projeto',devField('Título',info.project?.title||'','devProjectTitle')+devField('Versão',info.project?.version||'','devProjectVersion')+devField('Autor',info.project?.author||'','devProjectAuthor')+`<div class="dev-actions"><button id="devApplyProject">Aplicar dados do projeto</button></div>`)+devSection('Navegação de projeto',`<p class="dev-note">Selecionar outro ambiente no inspetor reposiciona o jogador para inspeção, sem executar as saídas da história.</p>`);
+  root.querySelectorAll('[data-dev-scene-code]').forEach(b=>b.onclick=()=>devOpenSceneCode(b.dataset.devSceneCode));
+  $('#devAllScenes').onclick=()=>devOpenPanel('scenes');
+  $('#devRoomSelect')?.addEventListener('change',e=>devGoto(e.target.value));
+  $('#devApplyRoom')?.addEventListener('click',()=>{const delta={title:$('#devRoomTitle').value};if(!room.dynamic||$('#devOverrideDesc')?.checked)delta.description=$('#devRoomDesc').value;devPatchRoom(room.id,delta);try{devApplyLive({rooms:{[room.id]:delta}});toast('Ambiente atualizado.')}catch(e){toast(e.message)}});
+  $('#devApplyWorld')?.addEventListener('click',()=>{const start=$('#devWorldStart').value;DEV.patch.world={start};try{devApplyLive({world:{start}});toast('Ambiente inicial atualizado.')}catch(e){toast(e.message)}});
+  $('#devApplyProject')?.addEventListener('click',()=>{const project={title:$('#devProjectTitle').value,version:$('#devProjectVersion').value,author:$('#devProjectAuthor').value};DEV.patch.project=project;try{devApplyLive({project});G.title=project.title;G.version=project.version;$('#gt').textContent=project.title;toast('Dados do projeto atualizados.')}catch(e){toast(e.message)}});
+  $('#devAddRoom')?.addEventListener('click',devCreateRoom);
+ }else if(DEV.tab==='scenes'){
+  const active=info.active_scenes||[],all=info.scenes||[];
+  const activeHtml=active.length?active.map(x=>`<div class="dev-item"><div class="dev-item-main"><strong>${esc(x.id)} ${x.current?'· ATUAL':''}</strong><small>${esc(x.status)} · nível ${x.depth}${x.queue?' · fila '+x.queue:''}</small></div><button data-dev-scene-code="${esc(x.id)}">Abrir código</button></div>`).join(''):'<p class="dev-note">Nenhuma cena em execução ou aguardando continuação. Se o jogo estiver parado entre ações, isso é normal.</p>';
+  const allHtml=all.map(id=>`<div class="dev-item"><div class="dev-item-main"><strong>${esc(id)}</strong><small>${active.some(x=>x.id===id)?'Ativa agora':'Registrada no projeto'}</small></div><button data-dev-scene-code="${esc(id)}">Editar código</button></div>`).join('')||'<p class="dev-note">Nenhuma cena registrada.</p>';
+  root.innerHTML=devSection('Acontecendo agora',activeHtml)+devSection('Todas as cenas',allHtml)+`<p class="dev-note">A lista de execução é atualizada conforme a história avança. Uma cena permanece listada enquanto está executando, aguardando uma escolha ou chamando outra cena.</p>`;
+  root.querySelectorAll('[data-dev-scene-code]').forEach(b=>b.onclick=()=>devOpenSceneCode(b.dataset.devSceneCode));
+ }else if(DEV.tab==='objects'){
+  if(!room){root.innerHTML='<p class="dev-note">Nenhum ambiente selecionado.</p>';return}
+  const exitList=(room.exits||[]).map(x=>`<div class="dev-item"><div class="dev-item-main"><strong>${esc(x.label||x.id)}</strong><small>${esc(x.id)} → ${esc(x.to)} · ${Number(x.duration)||0} min</small></div><button data-dev-edit-object="exit" data-id="${esc(x.id)}">Editar</button></div>`).join('')||'<p class="dev-note">Nenhuma saída neste ambiente.</p>';
+  const actList=(room.actions||[]).map(x=>`<div class="dev-item"><div class="dev-item-main"><strong>${esc(x.label||x.id)}</strong><small>${esc(x.id)} · ${Number(x.duration)||0} min</small></div><button data-dev-edit-object="action" data-id="${esc(x.id)}">Editar</button></div>`).join('')||'<p class="dev-note">Nenhuma ação neste ambiente.</p>';
+  root.innerHTML=devSection('Saídas',exitList+`<div class="dev-actions"><button id="devAddExit">+ Nova saída</button></div>`)+devSection('Ações',actList+`<div class="dev-actions"><button id="devAddAction">+ Nova ação</button></div>`)+devSection('Observação','<p class="dev-note">A edição visual altera rótulo, destino e duração. Condições, eventos, cenas e funções personalizadas permanecem no código Lua original.</p>');
+  root.querySelectorAll('[data-dev-edit-object]').forEach(b=>b.onclick=()=>devEditObject(b.dataset.devEditObject,b.dataset.id));
+  $('#devAddExit').onclick=()=>devEditObject('exit',null);$('#devAddAction').onclick=()=>devEditObject('action',null);
+ }else if(DEV.tab==='characters'){
+  const list=info.characters||[];
+  root.innerHTML=devSection('Personagens',list.map(c=>`<div class="dev-item"><div class="dev-item-main"><strong>${esc(c.name)}</strong><small>${esc(c.id)} · ${esc(c.room||'—')}</small></div><button data-dev-char="${esc(c.id)}">Editar</button></div>`).join('')||'<p class="dev-note">Nenhum personagem registrado.</p>')+`<div class="dev-actions"><button id="devAddChar">+ Novo personagem</button></div>`;
+  root.querySelectorAll('[data-dev-char]').forEach(b=>b.onclick=()=>devEditCharacter(b.dataset.devChar));$('#devAddChar').onclick=()=>devEditCharacter(null);
+ }else if(DEV.tab==='variables'){
+  const vars=info.variables||[];
+  root.innerHTML=devSection('Estado atual',vars.map(v=>`<div class="dev-item"><div class="dev-item-main"><strong>${esc(v.id)}</strong><small>${esc(JSON.stringify(v.value))}</small></div><button data-dev-var="${esc(v.id)}">Editar</button></div>`).join('')||'<p class="dev-note">Nenhuma variável definida.</p>')+`<div class="dev-actions"><button id="devAddVar">+ Nova variável</button></div><p class="dev-note">Ao exportar, o valor definido aqui também passa a ser o valor inicial da variável.</p>`;
+  root.querySelectorAll('[data-dev-var]').forEach(b=>b.onclick=()=>devEditVariable(b.dataset.devVar));$('#devAddVar').onclick=()=>devEditVariable(null);
+ }else if(DEV.tab==='hud'){
+  const list=info.hud||[];
+  root.innerHTML=devSection('Elementos de interface',list.map(h=>`<div class="dev-item"><div class="dev-item-main"><strong>${esc(h.label||h.var)}</strong><small>${esc(h.var)} · ${esc(h.style)}</small></div><button data-dev-hud="${esc(h.var)}">Editar</button></div>`).join('')||'<p class="dev-note">Nenhum elemento HUD definido.</p>')+`<div class="dev-actions"><button id="devAddHud">+ Adicionar variável ao HUD</button></div><p class="dev-note">O HUD controla como as variáveis aparecem durante o jogo. As condições avançadas continuam editáveis no código .vyr.</p>`;
+  root.querySelectorAll('[data-dev-hud]').forEach(b=>b.onclick=()=>devEditHud(b.dataset.devHud));$('#devAddHud').onclick=()=>devEditHud(null);
+ }else if(DEV.tab==='code'){
+  root.innerHTML=`<div class="dev-code-wrap"><div class="dev-list" id="devCodeIndex"></div><textarea id="devCodeText" class="dev-code" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea><div class="dev-code-actions"><button id="devApplyCode" class="dev-primary">Aplicar</button><button id="devResetCode">Recarregar original</button></div><p class="dev-note">Ao aplicar, o console é limpo e as cenas que estavam em execução recomeçam com o código atualizado. O estado atual do jogo é preservado.</p></div>`;
+  $('#devCodeText').value=G.src;$('#devApplyCode').onclick=devApplyCode;$('#devResetCode').onclick=()=>{$('#devCodeText').value=G.src};
+  const index=$('#devCodeIndex'),groups=[['Cenas',info.scenes||[]],['Eventos',info.events||[]],['Rotinas',info.schedules||[]]];index.innerHTML=groups.map(([label,items])=>items.length?`<div class="dev-section"><h3>${label}</h3><div class="dev-actions">${items.map(id=>`<button data-dev-find="${esc(id)}">${esc(id)}</button>`).join('')}</div></div>`:'').join('');index.querySelectorAll('[data-dev-find]').forEach(b=>b.onclick=()=>devFindCode(b.dataset.devFind));
+ }
+}
+function devEditObject(type,id){
+ const room=devCurrentRoom();if(!room)return;const list=type==='exit'?room.exits:room.actions;const item=id?list.find(x=>x.id===id):null;const isExit=type==='exit';
+ const idv=item?.id||(isExit?'nova_saida':'nova_acao');
+ const targetFields=isExit?devSelect('Destino',item?.to||room.id,'devObjTo',(DEV.info.rooms||[]).map(r=>({value:r.id,label:r.title+' · '+r.id}))) + devSelect('Cena ao entrar',item?.scene||'','devObjScene',[{value:'',label:'Nenhuma'},...(DEV.info.scenes||[]).map(x=>({value:x,label:x}))]):devSelect('Executar cena',item?.scene||'','devObjScene',[{value:'',label:'Selecionar cena'},...(DEV.info.scenes||[]).map(x=>({value:x,label:x}))]);
+ $('#devInspector').innerHTML=devSection(item?'Editar '+(isExit?'saída':'ação'):'Criar '+(isExit?'saída':'ação'),devField('Identificador',idv,'devObjId')+devField('Rótulo',item?.label||'','devObjLabel')+targetFields+devField('Duração (minutos)',item?.duration??0,'devObjDuration','number','min="0" step="1"')+`<div class="dev-actions"><button id="devSaveObject" class="dev-primary">Aplicar</button>${item?'<button id="devRemoveObject">Remover</button>':''}<button id="devBackObjects">Voltar</button></div>`);
+ $('#devSaveObject').onclick=()=>{
+  const newid=$('#devObjId').value.trim(),delta={id:newid,label:$('#devObjLabel').value,duration:Math.max(0,Number($('#devObjDuration').value)||0),scene:$('#devObjScene').value||false};
+  if(!newid)return toast('Informe um identificador.');if(isExit){delta.to=$('#devObjTo').value;if(!delta.to)return toast('Escolha um destino.');}else if(!item&&!delta.scene)return toast('Escolha uma cena para executar nesta ação.');
+  const prop=isExit?'exits':'actions',removeProp=isExit?'removeExits':'removeActions',removes=id&&id!==newid?[id]:[];
+  const p={rooms:{[room.id]:{[prop]:[delta],[removeProp]:removes}}};const oldPatch=DEV.patch.rooms[room.id]||{};const oldArray=oldPatch[prop]||[];DEV.patch.rooms[room.id]={...oldPatch,[prop]:[...oldArray.filter(x=>x.id!==id&&x.id!==newid),delta],[removeProp]:[...(oldPatch[removeProp]||[]).filter(x=>x!==newid),...removes]};
+  try{devApplyLive(p);devOpenPanel('objects');toast('Elemento atualizado.')}catch(e){toast(e.message)}
+ };
+ $('#devRemoveObject')?.addEventListener('click',()=>{
+  const prop=isExit?'exits':'actions',rm=isExit?'removeExits':'removeActions';const old=DEV.patch.rooms[room.id]||{};DEV.patch.rooms[room.id]={...old,[prop]:(old[prop]||[]).filter(x=>x.id!==id),[rm]:[...(old[rm]||[]),id]};
+  try{devApplyLive({rooms:{[room.id]:{[rm]:[id]}}});devOpenPanel('objects');toast('Elemento removido.')}catch(e){toast(e.message)}
+ });
+ $('#devBackObjects').onclick=()=>devOpenPanel('objects');
+}
+function devEditCharacter(id){
+ const c=id?(DEV.info.characters||[]).find(x=>x.id===id):null;if(id&&!c)return;
+ const rooms=(DEV.info.rooms||[]).map(r=>({value:r.id,label:r.title+' · '+r.id}));
+ $('#devInspector').innerHTML=devSection(c?'Editar personagem':'Criar personagem',devField('Identificador',c?.id||'novo_personagem','devCharId','text',c?'readonly':'')+devField('Nome exibido',c?.name||'','devCharName')+devSelect('Ambiente inicial',c?.initial_room||rooms[0]?.value,'devCharInitial',rooms)+devField('Atividade',c?.activity||'','devCharActivity')+`<div class="dev-actions"><button id="devSaveChar" class="dev-primary">Aplicar</button><button id="devBackChars">Voltar</button></div>`);
+ $('#devSaveChar').onclick=()=>{const charId=$('#devCharId').value.trim(),delta={name:$('#devCharName').value,initial_room:$('#devCharInitial').value,activity:$('#devCharActivity').value};if(!charId||!delta.initial_room)return toast('Preencha identificador e ambiente.');if(!c)delta.create=true;devPatchCharacter(charId,delta);try{devApplyLive({characters:{[charId]:delta}});devOpenPanel('characters');toast('Personagem atualizado.')}catch(e){toast(e.message)}};$('#devBackChars').onclick=()=>devOpenPanel('characters');
+}
+function devParseValue(raw){const s=raw.trim();if(s==='true')return true;if(s==='false')return false;if(s!==''&&Number.isFinite(Number(s)))return Number(s);return raw;}
+function devEditVariable(id){
+ const v=(DEV.info.variables||[]).find(x=>x.id===id),key=id||'nova_variavel',val=v?.value??0;
+ $('#devInspector').innerHTML=devSection(v?'Editar variável':'Criar variável',devField('Identificador',key,'devVarId','text',v?'readonly':'')+devField('Valor atual e inicial',typeof val==='object'?JSON.stringify(val):String(val),'devVarValue')+`<div class="dev-actions"><button id="devSaveVar" class="dev-primary">Aplicar</button>${v?'<button id="devRemoveVar">Remover variável</button>':''}<button id="devBackVars">Voltar</button></div><p class="dev-note">Use número, true/false ou texto. O valor inicial do projeto será atualizado junto com o estado atual.</p>`);
+ $('#devSaveVar').onclick=()=>{const k=$('#devVarId').value.trim();if(!k)return toast('Informe um identificador.');const value=devParseValue($('#devVarValue').value);devPatchVariable(k,value);try{devApplyLive({variables:{[k]:value}});devOpenPanel('variables');toast('Variável atualizada.')}catch(e){toast(e.message)}};$('#devRemoveVar')?.addEventListener('click',()=>{DEV.patch.removeVariables=[...(DEV.patch.removeVariables||[]),id];delete DEV.patch.variables[id];const nextHud=(DEV.info.hud||[]).filter(h=>h.var!==id);devPatchHud(nextHud);try{devApplyLive({removeVariables:[id],hud:nextHud});devOpenPanel('variables');toast('Variável removida.')}catch(e){toast(e.message)}});$('#devBackVars').onclick=()=>devOpenPanel('variables');
+}
+function devEditHud(key){
+ const h=(DEV.info.hud||[]).find(x=>x.var===key),varOpts=(DEV.info.variables||[]).map(v=>({value:v.id,label:v.id}));
+ $('#devInspector').innerHTML=devSection(h?'Editar HUD':'Adicionar ao HUD',devSelect('Variável',h?.var||varOpts[0]?.value,'devHudVar',varOpts)+devField('Rótulo',h?.label||'','devHudLabel')+devSelect('Estilo',h?.style||'number','devHudStyle',['number','bar','text','pips','flag'].map(x=>({value:x,label:x})))+devField('Máximo (número ou variável)',h?.max??100,'devHudMax','text')+devField('Mínimo',h?.min??0,'devHudMin','number','step="any"')+devField('Cor (hexadecimal)',h?.color||'','devHudColor')+`<div class="dev-actions"><button id="devSaveHud" class="dev-primary">Aplicar</button>${h?'<button id="devRemoveHud">Remover do HUD</button>':''}<button id="devBackHud">Voltar</button></div>`);
+ $('#devSaveHud').onclick=()=>{const varId=$('#devHudVar').value;if(!varId)return toast('Defina uma variável primeiro.');const next=(DEV.info.hud||[]).filter(x=>x.var!==key);next.push({var:varId,label:$('#devHudLabel').value||varId,style:$('#devHudStyle').value,max:(Number.isFinite(Number($('#devHudMax').value))?Number($('#devHudMax').value):$('#devHudMax').value),min:Number($('#devHudMin').value)||0,color:$('#devHudColor').value.trim()||false});devPatchHud(next);try{devApplyLive({hud:next});devOpenPanel('hud');toast('HUD atualizado.')}catch(e){toast(e.message)}};$('#devRemoveHud')?.addEventListener('click',()=>{const next=(DEV.info.hud||[]).filter(x=>x.var!==key);devPatchHud(next);try{devApplyLive({hud:next});devOpenPanel('hud');toast('Variável removida do HUD.')}catch(e){toast(e.message)}});$('#devBackHud').onclick=()=>devOpenPanel('hud');
+}
+function devCreateRoom(){
+ const roomId=prompt('Identificador do novo ambiente:');if(!roomId)return;const id=roomId.trim();if(!/^[A-Za-z0-9_-]+$/.test(id))return toast('Use letras, números, _ ou -.');if((DEV.info.rooms||[]).some(r=>r.id===id))return toast('Já existe um ambiente com esse identificador.');
+ const title=prompt('Nome do ambiente:',id)||id,description=prompt('Descrição inicial:','')||'';
+ const delta={title,description,exits:[],actions:[]};devPatchRoom(id,delta);
+ try{devApplyLive({rooms:{[id]:delta}});devGoto(id);devOpenPanel('room');toast('Ambiente criado.')}catch(e){toast(e.message)}
+}
+function devFindCode(term){
+ const ta=$('#devCodeText');if(!ta)return;const src=ta.value;let pos=src.indexOf(term);
+ if(pos<0)pos=src.indexOf('"'+term+'"');if(pos<0)pos=src.indexOf("'"+term+"'");
+ if(pos<0)return toast('Referência não encontrada no código.');
+ ta.focus();ta.setSelectionRange(pos,pos+term.length);
+ const line=(src.slice(0,pos).match(/\n/g)||[]).length+1;
+ const lh=parseFloat(getComputedStyle(ta).lineHeight)||19;ta.scrollTop=Math.max(0,(line-2)*lh);
+}
+function devOpenSourceLine(line,term='',searchLines=35){
+ devOpenPanel('code');
+ requestAnimationFrame(()=>{
+  const ta=$('#devCodeText');if(!ta)return;
+  const lines=ta.value.split('\n');
+  const targetLine=Math.max(1,Math.min(lines.length,Number(line)||1));
+  let found=null;
+  if(term){
+   const escaped=String(term).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+   let re;
+   try{re=new RegExp('(?<![\\p{L}\\p{N}_])'+escaped+'(?![\\p{L}\\p{N}_])','giu')}catch{re=new RegExp(escaped,'gi')}
+   const radius=Math.max(0,Number(searchLines)||0),lo=Math.max(1,targetLine-radius),hi=Math.min(lines.length,targetLine+radius);
+   for(let n=lo;n<=hi;n++){
+    re.lastIndex=0;let m;
+    while((m=re.exec(lines[n-1]))){
+     const candidate={line:n,start:m.index,end:m.index+m[0].length,distance:Math.abs(n-targetLine)};
+     if(!found||candidate.distance<found.distance||(candidate.distance===found.distance&&n<found.line))found=candidate;
+     if(!m[0].length)re.lastIndex++;
+    }
+   }
+  }
+  let start=0;for(let i=0;i<targetLine-1;i++)start+=lines[i].length+1;
+  const selectedLine=found?.line||targetLine;
+  if(found){start=0;for(let i=0;i<selectedLine-1;i++)start+=lines[i].length+1;start+=found.start;}
+  const end=found?start+(found.end-found.start):start+(lines[targetLine-1]||'').length;
+  ta.focus();ta.setSelectionRange(start,end);
+  const lh=parseFloat(getComputedStyle(ta).lineHeight)||19;
+  ta.scrollTop=Math.max(0,((found?selectedLine:targetLine)-2)*lh);
+ });
+}
+/* Localiza a expressão que alimentou uma fala, inclusive concatenações e chamadas dinâmicas. */
+function devLuaCallExpression(src,line,kind){
+ const lines=src.split('\n'),base=Math.max(0,Math.min(lines.length-1,(Number(line)||1)-1));
+ const chunk=lines.slice(Math.max(0,base-3),Math.min(lines.length,base+5)).join('\n');
+ const needle=kind==='Character.say'?'Character.say':'Narrator.say';
+ const at=chunk.indexOf(needle);if(at<0)return null;let i=chunk.indexOf('(',at+needle.length);if(i<0)return null;
+ const args=[];let start=++i,depth=0,quote='',longClose='',comment=false;
+ while(i<chunk.length){const c=chunk[i],n=chunk[i+1];
+  if(comment){if(c==='\n')comment=false;i++;continue}
+  if(longClose){if(chunk.startsWith(longClose,i)){i+=longClose.length;longClose='';continue}i++;continue}
+  if(quote){if(c==='\\'){i+=2;continue}if(c===quote)quote='';i++;continue}
+  if(c==='-'&&n==='-'){comment=true;i+=2;continue}
+  if(c==="'"||c==='"'){quote=c;i++;continue}
+  if(c==='['){const m=chunk.slice(i).match(/^\[(=*)\[/);if(m){longClose=']'+m[1]+']';i+=m[0].length;continue}}
+  if(c==='('||c==='{'||c==='['){depth++;i++;continue}
+  if(c===')'&&depth===0){args.push(chunk.slice(start,i).trim());break}
+  if(c===')'||c==='}'||c===']'){depth--;i++;continue}
+  if(c===','&&depth===0){args.push(chunk.slice(start,i).trim());start=++i;continue}
+  i++;
+ }
+ return (kind==='Character.say'?args[1]:args[0])||null;
+}
+function devRefreshConsoleFromSource(src){
+ document.querySelectorAll('#log .ln[data-dev-bind]').forEach(el=>{
+  const expr=devLuaCallExpression(src,el.dataset.devLine,el.dataset.devKind);if(!expr)return;
+  try{const result=call('V_revalueText',el.dataset.devBind,expr);if(!result.ok)return;
+   const who=el.querySelector(':scope > b');el.textContent='';if(who)el.append(who,document.createTextNode(result.text));else el.textContent=result.text;
+   el.dataset.devLive='1';
+  }catch(e){console.warn('Falha ao recalcular fala vinculada:',e)}
+ });
+}
+
+function devClickedWord(e,el){
+ if(!el)return '';
+ const text=el.textContent||'';let offset=-1;
+ try{
+  let r=document.caretRangeFromPoint?.(e.clientX,e.clientY);
+  if(!r&&document.caretPositionFromPoint){const p=document.caretPositionFromPoint(e.clientX,e.clientY);if(p){r=document.createRange();r.setStart(p.offsetNode,p.offset);r.collapse(true)}}
+  if(r&&el.contains(r.startContainer)){
+   const pre=document.createRange();pre.selectNodeContents(el);pre.setEnd(r.startContainer,r.startOffset);offset=pre.toString().length;
+  }
+ }catch{}
+ const re=/[\p{L}\p{N}_'-]+/gu;let m;
+ if(offset>=0){while((m=re.exec(text))){if(offset>=m.index&&offset<=m.index+m[0].length)return m[0]}}
+ // Fallback: identifica a palavra do próprio nó clicado, quando disponível.
+ const node=e.target?.nodeType===Node.TEXT_NODE?e.target:e.target?.firstChild;
+ const raw=node?.textContent||text;const first=raw.match(/[\p{L}\p{N}_'-]+/u);
+ return first?.[0]||'';
+}
+function devOpenSceneCode(id){
+ const info=DEV.info||{},line=info.scene_lines?.[id]||0;
+ if(line)devOpenSourceLine(line,'Scene.create',8);
+ else{devOpenPanel('code');requestAnimationFrame(()=>devFindCode('Scene.create("'+id+'"')||devFindCode(id));}
+}
+function devGoto(id){try{const r=call('V_devgoto',id);if(!r.view){if(r.ok===false)throw new Error(r.msg);throw new Error('Não foi possível trocar de ambiente.')}play(r);devUpdateInfo();renderDevPanel();toast('Ambiente selecionado.')}catch(e){toast(e.message)}}
+async function devApplyCode(){
+ if(!G)return;
+ const next=$('#devCodeText').value,name=G.name;
+ try{
+  const r=call('V_hotreload',next,name,luaValue(DEV.patch));
+  if(r.ok===false)throw new Error((r.kind?r.kind+': ':'')+(r.msg||'Falha ao aplicar o código.'));
+  G={...r.proj,name,src:next};
+  $('#gt').textContent=G.title||name;
+  // Limpa o console: as cenas ativas foram reiniciadas pelo runtime com o código novo.
+  $('#log').innerHTML='';$('#log').scrollTop=0;
+  last=r;
+  await render(r);
+  devUpdateInfo();
+  devSetMode(false);
+  toast('Código aplicado. Console limpo e cenas ativas reiniciadas.');
+ }catch(e){toast('Código não aplicado: '+e.message)}
+}
+async function devOpenFile(file){if(!file)return;try{const src=await file.text();const name=file.name;DEV.patch={rooms:{},characters:{},variables:{},hud:null,project:{},world:{}};DEV.source=src;await open(src,name,'new');}catch(e){toast('Falha ao abrir arquivo: '+e.message)}}
+$('#devPlay').onclick=()=>devSetMode(false);$('#devEdit').onclick=()=>{if(!DEV.edit)devSetMode(true);else if($('#devpanel').hidden)devOpenPanel('room');else devClosePanel()};$('#devCode').onclick=()=>{devSetMode(true);devOpenPanel('code')};$('#devSave').onclick=devSaveDownload;$('#devLoad').onclick=()=>$('#devFile').click();$('#devFile').onchange=e=>devOpenFile(e.target.files[0]);$('#devHome').onclick=()=>{devSetMode(false);leave();$('#devbar').hidden=true};$('#devClose').onclick=devClosePanel;
+document.querySelectorAll('[data-dev-tab]').forEach(b=>b.onclick=()=>{DEV.selected=null;devOpenPanel(b.dataset.devTab)});
+$('#devInspector').addEventListener('click',e=>{
+ const c=e.target.closest('[data-dev-edit-object]');if(c){devEditObject(c.dataset.devEditObject,c.dataset.id);return}
+});
+/* No modo de edição, qualquer elemento visível leva à sua origem no .vyr. */
+document.addEventListener('click',e=>{
+ if(!DEV.edit||$('#game').hidden)return;
+ const action=e.target.closest('#acts button[data-dev-type]');
+ if(action){e.preventDefault();e.stopImmediatePropagation();
+  const line=Number(action.dataset.devLine)||devCurrentRoom()?.line||0;
+  devOpenSourceLine(line,devClickedWord(e,action)||action.dataset.devId||'',120);return;
+ }
+ const character=e.target.closest('#chars [data-dev-character]');
+ if(character){e.preventDefault();e.stopImmediatePropagation();
+  devOpenSourceLine(Number(character.dataset.devLine)||1,devClickedWord(e,character),45);return;
+ }
+ const title=e.target.closest('#rt');
+ if(title){e.preventDefault();e.stopImmediatePropagation();devOpenSourceLine(Number(title.dataset.devLine)||devCurrentRoom()?.line||1,devClickedWord(e,title),12);return;}
+ const description=e.target.closest('#desc');
+ if(description){e.preventDefault();e.stopImmediatePropagation();devOpenSourceLine(Number(description.dataset.devLine)||devCurrentRoom()?.description_line||1,devClickedWord(e,description),30);return;}
+ const variable=e.target.closest('#hud .hv[data-dev-var]');
+ if(variable){e.preventDefault();e.stopImmediatePropagation();devOpenSourceLine(Number(variable.dataset.devLine)||1,variable.dataset.devVar,16);return;}
+ const lineEl=e.target.closest('#log .ln[data-dev-say]');
+ if(lineEl){e.preventDefault();e.stopImmediatePropagation();
+  const span=lineEl.querySelector(':scope > span');
+  const sourceLine=Number(lineEl.dataset.devLine)||0;
+  if(!sourceLine){toast('Não foi possível identificar a linha que gerou esta fala.');return}
+  devOpenSourceLine(sourceLine,devClickedWord(e,span||lineEl),6);return;
+ }
+},true);
+/* Após carregar qualquer história, habilita as ferramentas sem alterar a experiência de jogo. */
+const devOriginalOpen=open;
+open=async function(src,name,mode){DEV.source=src;DEV.patch={rooms:{},characters:{},variables:{},hud:null,project:{},world:{}};await devOriginalOpen(devSource(src,DEV.patch),name,mode);if(G){G.src=src;$('#devbar').hidden=false;devSetMode(false);devUpdateInfo();}};
+// Template mínimo para iniciar um projeto sem conteúdo de demonstração.
+const EMPTY_PROJECT_TEMPLATE=`Project.create({
+  id = "meu_projeto",
+  title = "Meu projeto",
+  version = "1.0"
+})
+
+World.create("Meu mundo")
+
+Room.create("inicio", {
+  title = "Início",
+  description = "Este é o começo da sua história.",
+  exits = {},
+  actions = {}
+})
+
+World.start("inicio")
+`;
+$('#loadTemplate').onclick=()=>open(EMPTY_PROJECT_TEMPLATE,'meu_projeto.vyr','new');
+/* O input original aponta para open dinamicamente. O código de projeto permanece sem o bloco de patch até a exportação. */
+</script>
+</body>
+</html>
